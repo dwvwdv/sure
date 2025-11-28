@@ -1,6 +1,3 @@
-rootProject.name = 'sure_mobile'
-include ':app'
-
 pluginManagement {
     def flutterSdkPath = {
         def properties = new Properties()
@@ -25,3 +22,6 @@ plugins {
     id "com.android.application" version "8.1.0" apply false
     id "org.jetbrains.kotlin.android" version "1.9.0" apply false
 }
+
+rootProject.name = 'sure_mobile'
+include ':app'

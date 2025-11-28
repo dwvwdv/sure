@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/accounts_provider.dart';
-import '../models/account.dart';
 import '../widgets/account_card.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -61,7 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
 
-    if (confirmed == true) {
+    if (confirmed == true && mounted) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final accountsProvider = Provider.of<AccountsProvider>(context, listen: false);
       
@@ -331,7 +330,7 @@ class _SectionHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
