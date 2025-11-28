@@ -13,6 +13,9 @@ on:
       - '.github/workflows/flutter-build.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-android:
     name: Build Android APK
