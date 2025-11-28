@@ -81,7 +81,7 @@ class AuthService {
   }) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/api/v1/auth/signup');
     
-    final body = {
+    final Map<String, Object> body = {
       'user': {
         'email': email,
         'password': password,
@@ -92,7 +92,7 @@ class AuthService {
     };
     
     if (inviteCode != null) {
-      body['invite_code'] = inviteCode as Object;
+      body['invite_code'] = inviteCode;
     }
 
     final response = await http.post(
