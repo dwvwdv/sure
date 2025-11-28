@@ -63,14 +63,19 @@ class _BackendConfigScreenState extends State<BackendConfigScreen> {
         },
       );
 
-      if (response.statusCode == 200 || response.statusCode == 404) {
-        // 200 = health check passed, 404 = server is reachable but health endpoint doesn't exist
+      if (response.statusCode == 200) {
+        // Health check passed
         setState(() {
-          _successMessage = 'Connection successful! Server is reachable.';
+          _successMessage = 'Connection successful! Sure backend is reachable.';
+        });
+      } else if (response.statusCode == 404) {
+        // Server is reachable but this doesn't look like a Sure backend
+        setState(() {
+          _errorMessage = 'Server is reachable, but /api/v1/health endpoint not found. This may not be a Sure backend server.';
         });
       } else {
         setState(() {
-          _errorMessage = 'Server responded with status ${response.statusCode}';
+          _errorMessage = 'Server responded with status ${response.statusCode}. Please check if this is a Sure backend server.';
         });
       }
     } catch (e) {
