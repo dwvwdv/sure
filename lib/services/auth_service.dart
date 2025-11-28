@@ -92,7 +92,7 @@ class AuthService {
     };
     
     if (inviteCode != null) {
-      body['invite_code'] = inviteCode;
+      body['invite_code'] = inviteCode as Object;
     }
 
     final response = await http.post(
