@@ -4,7 +4,9 @@ import 'package:http/http.dart' as http;
 import '../services/api_config.dart';
 
 class BackendConfigScreen extends StatefulWidget {
-  const BackendConfigScreen({super.key});
+  final VoidCallback? onConfigSaved;
+
+  const BackendConfigScreen({super.key, this.onConfigSaved});
 
   @override
   State<BackendConfigScreen> createState() => _BackendConfigScreenState();
@@ -51,11 +53,12 @@ class _BackendConfigScreenState extends State<BackendConfigScreen> {
 
     try {
       final url = _urlController.text.trim();
-      final testUrl = Uri.parse('$url/api/v1/health');
 
-      final response = await http.get(
-        testUrl,
-        headers: {'Accept': 'application/json'},
+      // Check /sessions/new page to verify it's a Sure backend
+      final sessionsUrl = Uri.parse('$url/sessions/new');
+      final sessionsResponse = await http.get(
+        sessionsUrl,
+        headers: {'Accept': 'text/html'},
       ).timeout(
         const Duration(seconds: 10),
         onTimeout: () {
@@ -63,19 +66,13 @@ class _BackendConfigScreenState extends State<BackendConfigScreen> {
         },
       );
 
-      if (response.statusCode == 200) {
-        // Health check passed
+      if (sessionsResponse.statusCode >= 200 && sessionsResponse.statusCode < 400) {
         setState(() {
           _successMessage = 'Connection successful! Sure backend is reachable.';
         });
-      } else if (response.statusCode == 404) {
-        // Server is reachable but this doesn't look like a Sure backend
-        setState(() {
-          _errorMessage = 'Server is reachable, but /api/v1/health endpoint not found. This may not be a Sure backend server.';
-        });
       } else {
         setState(() {
-          _errorMessage = 'Server responded with status ${response.statusCode}. Please check if this is a Sure backend server.';
+          _errorMessage = 'Server responded with status ${sessionsResponse.statusCode}. Please check if this is a Sure backend server.';
         });
       }
     } catch (e) {
@@ -107,9 +104,9 @@ class _BackendConfigScreenState extends State<BackendConfigScreen> {
       // Update ApiConfig
       ApiConfig.setBaseUrl(url);
 
-      // Navigate to login screen
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/login');
+      // Notify parent that config is saved
+      if (mounted && widget.onConfigSaved != null) {
+        widget.onConfigSaved!();
       }
     } catch (e) {
       setState(() {

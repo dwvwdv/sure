@@ -125,6 +125,18 @@ class _AppWrapperState extends State<AppWrapper> {
     });
   }
 
+  void _onBackendConfigSaved() {
+    setState(() {
+      _hasBackendUrl = true;
+    });
+  }
+
+  void _goToBackendConfig() {
+    setState(() {
+      _hasBackendUrl = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isCheckingConfig) {
@@ -136,7 +148,9 @@ class _AppWrapperState extends State<AppWrapper> {
     }
 
     if (!_hasBackendUrl) {
-      return const BackendConfigScreen();
+      return BackendConfigScreen(
+        onConfigSaved: _onBackendConfigSaved,
+      );
     }
 
     return Consumer<AuthProvider>(
@@ -153,7 +167,9 @@ class _AppWrapperState extends State<AppWrapper> {
           return const DashboardScreen();
         }
 
-        return const LoginScreen();
+        return LoginScreen(
+          onGoToSettings: _goToBackendConfig,
+        );
       },
     );
   }

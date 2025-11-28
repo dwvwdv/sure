@@ -4,7 +4,9 @@ import '../providers/auth_provider.dart';
 import '../services/api_config.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final VoidCallback? onGoToSettings;
+
+  const LoginScreen({super.key, this.onGoToSettings});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -55,9 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: 'Backend Settings',
-            onPressed: () {
-              Navigator.of(context).pushReplacementNamed('/config');
-            },
+            onPressed: widget.onGoToSettings,
           ),
         ],
       ),
