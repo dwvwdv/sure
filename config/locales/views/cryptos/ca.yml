@@ -1,8 +1,0 @@
----
-ca:
-  cryptos:
-    edit:
-      edit: Edita %{account}
-    new:
-      title: Introdueix el saldo del compte
-

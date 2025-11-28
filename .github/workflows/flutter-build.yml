@@ -5,11 +5,17 @@ on:
     branches:
       - main
     paths:
-      - 'sure_mobile/**'
+      - 'lib/**'
+      - 'android/**'
+      - 'ios/**'
+      - 'pubspec.yaml'
       - '.github/workflows/flutter-build.yml'
   pull_request:
     paths:
-      - 'sure_mobile/**'
+      - 'lib/**'
+      - 'android/**'
+      - 'ios/**'
+      - 'pubspec.yaml'
       - '.github/workflows/flutter-build.yml'
   workflow_dispatch:
 
@@ -21,10 +27,6 @@ jobs:
     name: Build Android APK
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    
-    defaults:
-      run:
-        working-directory: sure_mobile
 
     steps:
       - name: Checkout code
@@ -59,7 +61,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-          path: sure_mobile/build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
 
       - name: Build App Bundle (Release)
@@ -69,17 +71,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-release-aab
-          path: sure_mobile/build/app/outputs/bundle/release/app-release.aab
+          path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
 
   build-ios:
     name: Build iOS (No Code Sign)
     runs-on: macos-latest
     timeout-minutes: 45
-    
-    defaults:
-      run:
-        working-directory: sure_mobile
 
     steps:
       - name: Checkout code
@@ -110,5 +108,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-release
-          path: sure_mobile/ios-release.zip
+          path: ios-release.zip
           retention-days: 30
