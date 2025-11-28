@@ -18,9 +18,20 @@ class AuthTokens {
       accessToken: json['access_token'] as String,
       refreshToken: json['refresh_token'] as String,
       tokenType: json['token_type'] as String,
-      expiresIn: json['expires_in'] as int,
-      createdAt: json['created_at'] as int,
+      expiresIn: _parseToInt(json['expires_in']),
+      createdAt: _parseToInt(json['created_at']),
     );
+  }
+
+  /// Helper method to parse a value to int, handling both String and int types
+  static int _parseToInt(dynamic value) {
+    if (value is int) {
+      return value;
+    } else if (value is String) {
+      return int.parse(value);
+    } else {
+      throw FormatException('Cannot parse $value to int');
+    }
   }
 
   Map<String, dynamic> toJson() {
