@@ -54,30 +54,7 @@ class _BackendConfigScreenState extends State<BackendConfigScreen> {
     try {
       final url = _urlController.text.trim();
 
-      // Try health endpoint first
-      try {
-        final healthUrl = Uri.parse('$url/api/v1/health');
-        final healthResponse = await http.get(
-          healthUrl,
-          headers: {'Accept': 'application/json'},
-        ).timeout(
-          const Duration(seconds: 10),
-          onTimeout: () {
-            throw Exception('timeout');
-          },
-        );
-
-        if (healthResponse.statusCode == 200) {
-          setState(() {
-            _successMessage = 'Connection successful! Sure backend is reachable.';
-          });
-          return;
-        }
-      } catch (e) {
-        // Health endpoint failed, try sessions/new as fallback
-      }
-
-      // Fallback: Try sessions/new page
+      // Check /sessions/new page to verify it's a Sure backend
       final sessionsUrl = Uri.parse('$url/sessions/new');
       final sessionsResponse = await http.get(
         sessionsUrl,
