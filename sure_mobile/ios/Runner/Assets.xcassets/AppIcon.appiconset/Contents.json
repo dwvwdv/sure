@@ -1,106 +1,62 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>images</key>
-	<array>
-		<dict>
-			<key>size</key>
-			<string>20x20</string>
-			<key>idiom</key>
-			<string>iphone</string>
-			<key>filename</key>
-			<string>Icon-App-20x20@2x.png</string>
-			<key>scale</key>
-			<string>2x</string>
-		</dict>
-		<dict>
-			<key>size</key>
-			<string>20x20</string>
-			<key>idiom</key>
-			<string>iphone</string>
-			<key>filename</key>
-			<string>Icon-App-20x20@3x.png</string>
-			<key>scale</key>
-			<string>3x</string>
-		</dict>
-		<dict>
-			<key>size</key>
-			<string>29x29</string>
-			<key>idiom</key>
-			<string>iphone</string>
-			<key>filename</key>
-			<string>Icon-App-29x29@2x.png</string>
-			<key>scale</key>
-			<string>2x</string>
-		</dict>
-		<dict>
-			<key>size</key>
-			<string>29x29</string>
-			<key>idiom</key>
-			<string>iphone</string>
-			<key>filename</key>
-			<string>Icon-App-29x29@3x.png</string>
-			<key>scale</key>
-			<string>3x</string>
-		</dict>
-		<dict>
-			<key>size</key>
-			<string>40x40</string>
-			<key>idiom</key>
-			<string>iphone</string>
-			<key>filename</key>
-			<string>Icon-App-40x40@2x.png</string>
-			<key>scale</key>
-			<string>2x</string>
-		</dict>
-		<dict>
-			<key>size</key>
-			<string>40x40</string>
-			<key>idiom</key>
-			<string>iphone</string>
-			<key>filename</key>
-			<string>Icon-App-40x40@3x.png</string>
-			<key>scale</key>
-			<string>3x</string>
-		</dict>
-		<dict>
-			<key>size</key>
-			<string>60x60</string>
-			<key>idiom</key>
-			<string>iphone</string>
-			<key>filename</key>
-			<string>Icon-App-60x60@2x.png</string>
-			<key>scale</key>
-			<string>2x</string>
-		</dict>
-		<dict>
-			<key>size</key>
-			<string>60x60</string>
-			<key>idiom</key>
-			<string>iphone</string>
-			<key>filename</key>
-			<string>Icon-App-60x60@3x.png</string>
-			<key>scale</key>
-			<string>3x</string>
-		</dict>
-		<dict>
-			<key>size</key>
-			<string>1024x1024</string>
-			<key>idiom</key>
-			<string>ios-marketing</string>
-			<key>filename</key>
-			<string>Icon-App-1024x1024@1x.png</string>
-			<key>scale</key>
-			<string>1x</string>
-		</dict>
-	</array>
-	<key>info</key>
-	<dict>
-		<key>version</key>
-		<integer>1</integer>
-		<key>author</key>
-		<string>xcode</string>
-	</dict>
-</dict>
-</plist>
+{
+  "images": [
+    {
+      "size": "20x20",
+      "idiom": "iphone",
+      "filename": "Icon-App-20x20@2x.png",
+      "scale": "2x"
+    },
+    {
+      "size": "20x20",
+      "idiom": "iphone",
+      "filename": "Icon-App-20x20@3x.png",
+      "scale": "3x"
+    },
+    {
+      "size": "29x29",
+      "idiom": "iphone",
+      "filename": "Icon-App-29x29@2x.png",
+      "scale": "2x"
+    },
+    {
+      "size": "29x29",
+      "idiom": "iphone",
+      "filename": "Icon-App-29x29@3x.png",
+      "scale": "3x"
+    },
+    {
+      "size": "40x40",
+      "idiom": "iphone",
+      "filename": "Icon-App-40x40@2x.png",
+      "scale": "2x"
+    },
+    {
+      "size": "40x40",
+      "idiom": "iphone",
+      "filename": "Icon-App-40x40@3x.png",
+      "scale": "3x"
+    },
+    {
+      "size": "60x60",
+      "idiom": "iphone",
+      "filename": "Icon-App-60x60@2x.png",
+      "scale": "2x"
+    },
+    {
+      "size": "60x60",
+      "idiom": "iphone",
+      "filename": "Icon-App-60x60@3x.png",
+      "scale": "3x"
+    },
+    {
+      "size": "1024x1024",
+      "idiom": "ios-marketing",
+      "filename": "Icon-App-1024x1024@1x.png",
+      "scale": "1x"
+    }
+  ],
+  "info": {
+    "version": 1,
+    "author": "xcode"
+  }
+}
