@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/accounts_provider.dart';
+import 'screens/backend_config_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'services/api_config.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ApiConfig.initialize();
   runApp(const SureApp());
 }
 
@@ -85,17 +89,56 @@ class SureApp extends StatelessWidget {
           ),
         ),
         themeMode: ThemeMode.system,
-        home: const AuthWrapper(),
+        routes: {
+          '/config': (context) => const BackendConfigScreen(),
+          '/login': (context) => const LoginScreen(),
+          '/dashboard': (context) => const DashboardScreen(),
+        },
+        home: const AppWrapper(),
       ),
     );
   }
 }
 
-class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
+class AppWrapper extends StatefulWidget {
+  const AppWrapper({super.key});
+
+  @override
+  State<AppWrapper> createState() => _AppWrapperState();
+}
+
+class _AppWrapperState extends State<AppWrapper> {
+  bool _isCheckingConfig = true;
+  bool _hasBackendUrl = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBackendConfig();
+  }
+
+  Future<void> _checkBackendConfig() async {
+    final hasUrl = await ApiConfig.initialize();
+    setState(() {
+      _hasBackendUrl = hasUrl;
+      _isCheckingConfig = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isCheckingConfig) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (!_hasBackendUrl) {
+      return const BackendConfigScreen();
+    }
+
     return Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
         if (authProvider.isLoading) {
@@ -105,11 +148,11 @@ class AuthWrapper extends StatelessWidget {
             ),
           );
         }
-        
+
         if (authProvider.isAuthenticated) {
           return const DashboardScreen();
         }
-        
+
         return const LoginScreen();
       },
     );
