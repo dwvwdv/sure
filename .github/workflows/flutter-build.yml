@@ -1,0 +1,111 @@
+name: Flutter Mobile Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'sure_mobile/**'
+      - '.github/workflows/flutter-build.yml'
+  pull_request:
+    paths:
+      - 'sure_mobile/**'
+      - '.github/workflows/flutter-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    defaults:
+      run:
+        working-directory: sure_mobile
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build APK (Release)
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: sure_mobile/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Build App Bundle (Release)
+        run: flutter build appbundle --release
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: sure_mobile/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+  build-ios:
+    name: Build iOS (No Code Sign)
+    runs-on: macos-latest
+    timeout-minutes: 45
+    
+    defaults:
+      run:
+        working-directory: sure_mobile
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze --no-fatal-infos
+
+      - name: Build iOS (No Code Sign)
+        run: flutter build ios --release --no-codesign
+
+      - name: Create iOS build archive
+        run: |
+          cd build/ios/iphoneos
+          zip -r ../../../ios-release.zip Runner.app
+
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release
+          path: sure_mobile/ios-release.zip
+          retention-days: 30

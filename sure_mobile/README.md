@@ -100,6 +100,22 @@ This app integrates with the Sure Finance Rails API:
 - `POST /api/v1/auth/refresh` - Token refresh
 - `GET /api/v1/accounts` - Fetch user accounts
 
+## CI/CD
+
+The app includes automated CI/CD via GitHub Actions (`.github/workflows/flutter-build.yml`):
+
+- **Triggers**: On push/PR to `main` branch when `sure_mobile/` files change
+- **Android Build**: Generates release APK and AAB artifacts
+- **iOS Build**: Generates iOS release build (unsigned)
+- **Quality Checks**: Code analysis and tests run before building
+
+### Downloading Build Artifacts
+
+After a successful CI run, download artifacts from the GitHub Actions workflow:
+- `app-release-apk` - Android APK file
+- `app-release-aab` - Android App Bundle (for Play Store)
+- `ios-release` - iOS app bundle (requires code signing for distribution)
+
 ## Building for Release
 
 ### Android
