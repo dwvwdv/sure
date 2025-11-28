@@ -48,6 +48,18 @@ class _LoginScreenState extends State<LoginScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(''),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Backend Settings',
+            onPressed: () {
+              Navigator.of(context).pushReplacementNamed('/config');
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
