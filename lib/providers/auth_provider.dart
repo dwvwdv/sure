@@ -81,7 +81,7 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _errorMessage = 'Connection error. Please check your internet connection.';
+      _errorMessage = 'Connection error: ${e.toString()}';
       _isLoading = false;
       notifyListeners();
       return false;
@@ -123,7 +123,7 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _errorMessage = 'Connection error. Please check your internet connection.';
+      _errorMessage = 'Connection error: ${e.toString()}';
       _isLoading = false;
       notifyListeners();
       return false;

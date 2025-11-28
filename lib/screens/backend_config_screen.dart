@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import '../services/api_config.dart';
 
 class BackendConfigScreen extends StatefulWidget {
@@ -13,7 +14,9 @@ class _BackendConfigScreenState extends State<BackendConfigScreen> {
   final _formKey = GlobalKey<FormState>();
   final _urlController = TextEditingController();
   bool _isLoading = false;
+  bool _isTesting = false;
   String? _errorMessage;
+  String? _successMessage;
 
   @override
   void initState() {
@@ -33,6 +36,50 @@ class _BackendConfigScreenState extends State<BackendConfigScreen> {
     if (savedUrl != null && savedUrl.isNotEmpty) {
       setState(() {
         _urlController.text = savedUrl;
+      });
+    }
+  }
+
+  Future<void> _testConnection() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isTesting = true;
+      _errorMessage = null;
+      _successMessage = null;
+    });
+
+    try {
+      final url = _urlController.text.trim();
+      final testUrl = Uri.parse('$url/api/v1/health');
+
+      final response = await http.get(
+        testUrl,
+        headers: {'Accept': 'application/json'},
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('Connection timeout. Please check the URL and try again.');
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 404) {
+        // 200 = health check passed, 404 = server is reachable but health endpoint doesn't exist
+        setState(() {
+          _successMessage = 'Connection successful! Server is reachable.';
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Server responded with status ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Connection failed: ${e.toString()}';
+      });
+    } finally {
+      setState(() {
+        _isTesting = false;
       });
     }
   }
@@ -210,6 +257,42 @@ class _BackendConfigScreenState extends State<BackendConfigScreen> {
                     ),
                   ),
 
+                // Success Message
+                if (_successMessage != null)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle_outline,
+                          color: Colors.green,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _successMessage!,
+                            style: TextStyle(color: Colors.green[800]),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            setState(() {
+                              _successMessage = null;
+                            });
+                          },
+                          iconSize: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+
                 // URL Field
                 TextFormField(
                   controller: _urlController,
@@ -224,11 +307,26 @@ class _BackendConfigScreenState extends State<BackendConfigScreen> {
                   validator: _validateUrl,
                   onFieldSubmitted: (_) => _saveAndContinue(),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
+
+                // Test Connection Button
+                OutlinedButton.icon(
+                  onPressed: _isTesting || _isLoading ? null : _testConnection,
+                  icon: _isTesting
+                      ? const SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.cable),
+                  label: Text(_isTesting ? 'Testing...' : 'Test Connection'),
+                ),
+
+                const SizedBox(height: 12),
 
                 // Continue Button
                 ElevatedButton(
-                  onPressed: _isLoading ? null : _saveAndContinue,
+                  onPressed: _isLoading || _isTesting ? null : _saveAndContinue,
                   child: _isLoading
                       ? const SizedBox(
                           height: 20,
