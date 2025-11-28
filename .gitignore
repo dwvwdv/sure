@@ -108,3 +108,23 @@ scripts/
 .cursor/rules/dev_workflow.mdc
 .cursor/rules/taskmaster.mdc
 
+# Flutter / Dart
+sure_mobile/.dart_tool/
+sure_mobile/.packages
+sure_mobile/.pub-cache/
+sure_mobile/.pub/
+sure_mobile/build/
+sure_mobile/.flutter-plugins
+sure_mobile/.flutter-plugins-dependencies
+sure_mobile/*.iml
+sure_mobile/.metadata
+sure_mobile/android/.gradle/
+sure_mobile/android/local.properties
+sure_mobile/android/app/build/
+sure_mobile/ios/Pods/
+sure_mobile/ios/.symlinks/
+sure_mobile/ios/Flutter/Flutter.framework
+sure_mobile/ios/Flutter/Flutter.podspec
+sure_mobile/ios/Runner.xcworkspace/
+sure_mobile/pubspec.lock
+
