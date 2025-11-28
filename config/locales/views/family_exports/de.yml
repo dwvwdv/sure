@@ -1,7 +1,0 @@
----
-de:
-  family_exports:
-    list:
-      in_progress: Wird ausgeführt
-      complete: Abgeschlossen
-      failed: Fehlgeschlagen

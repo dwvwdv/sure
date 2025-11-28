@@ -1,7 +1,0 @@
----
-nb:
-  family_exports:
-    list:
-      in_progress: Pågår
-      complete: Fullført
-      failed: Mislykket

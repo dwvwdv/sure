@@ -1,101 +1,148 @@
+# Sure Mobile
 
-<img width="1270" height="1140" alt="sure_shot" src="https://github.com/user-attachments/assets/9c6e03cc-3490-40ab-9a68-52e042c51293" />
+A Flutter mobile application for Sure personal finance management. This app provides basic functionality to:
 
-<p align="center">
-  <!-- Keep these links. Translations will automatically update with the README. -->
-  <a href="https://readme-i18n.com/de/we-promise/sure">Deutsch</a> | 
-  <a href="https://readme-i18n.com/es/we-promise/sure">Español</a> | 
-  <a href="https://readme-i18n.com/fr/we-promise/sure">Français</a> | 
-  <a href="https://readme-i18n.com/ja/we-promise/sure">日本語</a> | 
-  <a href="https://readme-i18n.com/ko/we-promise/sure">한국어</a> | 
-  <a href="https://readme-i18n.com/pt/we-promise/sure">Português</a> | 
-  <a href="https://readme-i18n.com/ru/we-promise/sure">Русский</a> | 
-  <a href="https://readme-i18n.com/zh/we-promise/sure">中文</a>
-</p>
+- **Login** - Authenticate with your Sure Finance server
+- **View Balance** - See all your accounts and their balances
 
-# Sure: The personal finance app for everyone
+## Features
 
-<b>Get
-involved: [Discord](https://discord.gg/36ZGBsxYEK) • [Website](https://sure.am) • [Issues](https://github.com/we-promise/sure/issues)</b>
+- 🔐 Secure authentication with OAuth 2.0
+- 📱 Cross-platform support (Android & iOS)
+- 💰 View all linked accounts
+- 🎨 Material Design 3 with light/dark theme support
+- 🔄 Token refresh for persistent sessions
+- 🔒 Two-factor authentication (MFA) support
 
-> [!IMPORTANT]
-> This repository is a community fork of the now-abandoned Maybe Finance project. <br />
-> Learn more in their [final release](https://github.com/maybe-finance/maybe/releases/tag/v0.6.0) doc.
+## Requirements
 
-## Backstory
+- Flutter SDK >= 3.0.0
+- Dart SDK >= 3.0.0
+- Android SDK (for Android builds)
+- Xcode (for iOS builds)
 
-The Maybe Finance team spent most of 2021–2022 building a full-featured personal finance and wealth management app. It even included an “Ask an Advisor” feature that connected users with a real CFP/CFA — all included with your subscription.
+## Getting Started
 
-The business end of things didn't work out, and so they stopped developing the app in mid-2023.
+### 1. Install Flutter
 
-After spending nearly $1 million on development (employees, contractors, data providers, infra, etc.), the team open-sourced the app. Their goal was to let users self-host it for free — and eventually launch a hosted version for a small fee.
+Follow the official Flutter installation guide: https://docs.flutter.dev/get-started/install
 
-They actually did launch that hosted version … briefly.
+### 2. Install Dependencies
 
-That also didn’t work out — at least not as a sustainable B2C business — so now here we are: hosting a community-maintained fork to keep the codebase alive and see where this can go next.
-
-Join us!
-
-## Hosting Sure
-
-Sure is a fully working personal finance app that can be [self hosted with Docker](docs/hosting/docker.md).
-
-## Forking and Attribution
-
-This repo is a community fork of the archived Maybe Finance repo.
-You’re free to fork it under the AGPLv3 license — but we’d love it if you stuck around and contributed here instead.
-
-To stay compliant and avoid trademark issues:
-
-- Be sure to include the original [AGPLv3 license](https://github.com/maybe-finance/maybe/blob/main/LICENSE) and clearly state in your README that your fork is based on Maybe Finance but is **not affiliated with or endorsed by** Maybe Finance Inc.
-- "Maybe" is a trademark of Maybe Finance Inc. and therefore, use of it is NOT allowed in forked repositories (or the logo)
-
-## Local Development Setup
-
-**If you are trying to _self-host_ the app, [read this guide to get started](docs/hosting/docker.md).**
-
-The instructions below are for developers to get started with contributing to the app.
-
-### Requirements
-
-- See `.ruby-version` file for required Ruby version
-- PostgreSQL >9.3 (latest stable version recommended)
-- Redis > 5.4 (latest stable version recommended)
-
-### Getting Started
-```sh
-cd sure
-cp .env.local.example .env.local
-bin/setup
-bin/dev
-
-# Optionally, load demo data
-rake demo_data:default
+```bash
+flutter pub get
 ```
 
-Visit http://localhost:3000 to view the app. You can log in with these demo credentials (from the DB seed):
+### 3. Configure API Endpoint
 
-- Email: `user@example.com`
-- Password: `Password1!`
+Edit `lib/services/api_config.dart` to point to your Sure Finance server:
 
-For further instructions, see guides below.
+```dart
+// For local development with Android emulator
+static String _baseUrl = 'http://10.0.2.2:3000';
 
-### Setup Guides
+// For local development with iOS simulator
+static String _baseUrl = 'http://localhost:3000';
 
-- [Mac dev setup](https://github.com/we-promise/sure/wiki/Mac-Dev-Setup-Guide)
-- [Linux dev setup](https://github.com/we-promise/sure/wiki/Linux-Dev-Setup-Guide)
-- [Windows dev setup](https://github.com/we-promise/sure/wiki/Windows-Dev-Setup-Guide)
-- Dev containers - visit [this guide](https://code.visualstudio.com/docs/devcontainers/containers)
+// For production
+static String _baseUrl = 'https://your-sure-server.com';
+```
 
-### One-click
+### 4. Run the App
 
-[![Run on PikaPods](https://www.pikapods.com/static/run-button.svg)](https://www.pikapods.com/pods?run=maybe)
+```bash
+# For Android
+flutter run -d android
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/sure?referralCode=CW_fPQ)
+# For iOS
+flutter run -d ios
 
-## License and Trademarks
+# For web (development only)
+flutter run -d chrome
+```
 
-Maybe and Sure are both distributed under
-an [AGPLv3 license](https://github.com/we-promise/sure/blob/main/LICENSE).
-- "Maybe" is a trademark of Maybe Finance, Inc.
-- "Sure" is not, and refers to this community fork.
+## Project Structure
+
+```
+.
+├── lib/
+│   ├── main.dart              # App entry point
+│   ├── models/                # Data models
+│   │   ├── account.dart
+│   │   ├── auth_tokens.dart
+│   │   └── user.dart
+│   ├── providers/             # State management
+│   │   ├── auth_provider.dart
+│   │   └── accounts_provider.dart
+│   ├── screens/               # UI screens
+│   │   ├── login_screen.dart
+│   │   └── dashboard_screen.dart
+│   ├── services/              # API services
+│   │   ├── api_config.dart
+│   │   ├── auth_service.dart
+│   │   ├── accounts_service.dart
+│   │   └── device_service.dart
+│   └── widgets/               # Reusable widgets
+│       └── account_card.dart
+├── android/                   # Android configuration
+├── ios/                       # iOS configuration
+├── pubspec.yaml               # Dependencies
+└── README.md
+```
+
+## API Integration
+
+This app integrates with the Sure Finance Rails API:
+
+- `POST /api/v1/auth/login` - User authentication
+- `POST /api/v1/auth/signup` - User registration
+- `POST /api/v1/auth/refresh` - Token refresh
+- `GET /api/v1/accounts` - Fetch user accounts
+
+## CI/CD
+
+The app includes automated CI/CD via GitHub Actions (`.github/workflows/flutter-build.yml`):
+
+- **Triggers**: On push/PR to `main` branch when Flutter files change
+- **Android Build**: Generates release APK and AAB artifacts
+- **iOS Build**: Generates iOS release build (unsigned)
+- **Quality Checks**: Code analysis and tests run before building
+
+### Downloading Build Artifacts
+
+After a successful CI run, download artifacts from the GitHub Actions workflow:
+- `app-release-apk` - Android APK file
+- `app-release-aab` - Android App Bundle (for Play Store)
+- `ios-release` - iOS app bundle (requires code signing for distribution)
+
+## Building for Release
+
+### Android
+
+```bash
+flutter build apk --release
+# or for App Bundle
+flutter build appbundle --release
+```
+
+### iOS
+
+```bash
+flutter build ios --release
+```
+
+## Future Expansion
+
+This app provides a foundation for additional features:
+
+- Transaction history
+- Account sync
+- Budget management
+- Investment tracking
+- AI chat assistant
+- Push notifications
+- Biometric authentication
+
+## License
+
+This project is distributed under the AGPLv3 license.
