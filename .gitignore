@@ -128,3 +128,4 @@ sure_mobile/ios/Flutter/Flutter.podspec
 sure_mobile/ios/Runner.xcworkspace/
 sure_mobile/pubspec.lock
 
+_codeql_detected_source_root
