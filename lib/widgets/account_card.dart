@@ -3,10 +3,12 @@ import '../models/account.dart';
 
 class AccountCard extends StatelessWidget {
   final Account account;
+  final VoidCallback? onTap;
 
   const AccountCard({
     super.key,
     required this.account,
+    this.onTap,
   });
 
   IconData _getAccountIcon() {
@@ -52,9 +54,12 @@ class AccountCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
           children: [
             // Account icon
             Container(

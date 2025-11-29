@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/account.dart';
 import '../providers/auth_provider.dart';
 import '../providers/accounts_provider.dart';
 import '../widgets/account_card.dart';
+import 'transaction_form_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -83,6 +85,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _handleAccountTap(Account account) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TransactionFormScreen(account: account),
+      ),
+    );
+
+    // Refresh accounts if transaction was created successfully
+    if (result == true) {
+      await _loadAccounts();
+    }
+  }
+
   Future<void> _handleLogout() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -105,7 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (confirmed == true && mounted) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final accountsProvider = Provider.of<AccountsProvider>(context, listen: false);
-      
+
       accountsProvider.clearAccounts();
       await authProvider.logout();
     }
@@ -287,8 +303,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       sliver: SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
+                            final account = accountsProvider.assetAccounts[index];
                             return AccountCard(
-                              account: accountsProvider.assetAccounts[index],
+                              account: account,
+                              onTap: () => _handleAccountTap(account),
                             );
                           },
                           childCount: accountsProvider.assetAccounts.length,
@@ -318,8 +336,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       sliver: SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
+                            final account = accountsProvider.liabilityAccounts[index];
                             return AccountCard(
-                              account: accountsProvider.liabilityAccounts[index],
+                              account: account,
+                              onTap: () => _handleAccountTap(account),
                             );
                           },
                           childCount: accountsProvider.liabilityAccounts.length,
@@ -365,7 +385,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
-              return AccountCard(account: uncategorized[index]);
+              final account = uncategorized[index];
+              return AccountCard(
+                account: account,
+                onTap: () => _handleAccountTap(account),
+              );
             },
             childCount: uncategorized.length,
           ),
