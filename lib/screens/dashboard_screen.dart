@@ -409,6 +409,7 @@ class _SummaryCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   '${firstFormatted[0]} ${firstFormatted[1]}',
+                  textAlign: TextAlign.right,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
@@ -424,6 +425,7 @@ class _SummaryCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   '${secondFormatted[0]} ${secondFormatted[1]}',
+                  textAlign: TextAlign.right,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
@@ -437,6 +439,7 @@ class _SummaryCard extends StatelessWidget {
         rows.add(
           Text(
             '${firstFormatted[0]} ${firstFormatted[1]}',
+            textAlign: TextAlign.right,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w500,
             ),
