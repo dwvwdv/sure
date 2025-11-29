@@ -4,11 +4,13 @@ import '../models/account.dart';
 class AccountCard extends StatelessWidget {
   final Account account;
   final VoidCallback? onTap;
+  final VoidCallback? onSwipe;
 
   const AccountCard({
     super.key,
     required this.account,
     this.onTap,
+    this.onSwipe,
   });
 
   IconData _getAccountIcon() {
@@ -52,7 +54,7 @@ class AccountCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final accountColor = _getAccountColor(context);
 
-    return Card(
+    final cardContent = Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: onTap,
@@ -126,5 +128,41 @@ class AccountCard extends StatelessWidget {
         ),
       ),
     );
+
+    // If onSwipe is provided, wrap with Dismissible
+    if (onSwipe != null) {
+      return Dismissible(
+        key: Key('account_${account.id}'),
+        direction: DismissDirection.endToStart,
+        confirmDismiss: (direction) async {
+          // Don't actually dismiss, just trigger the swipe action
+          onSwipe?.call();
+          return false; // Don't remove the item
+        },
+        background: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.receipt_long, color: Colors.white, size: 28),
+              SizedBox(height: 4),
+              Text(
+                'Transactions',
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        child: cardContent,
+      );
+    }
+
+    return cardContent;
   }
 }
