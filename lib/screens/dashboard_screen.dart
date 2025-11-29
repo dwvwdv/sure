@@ -4,7 +4,7 @@ import '../models/account.dart';
 import '../providers/auth_provider.dart';
 import '../providers/accounts_provider.dart';
 import '../widgets/account_card.dart';
-import 'transaction_form_screen.dart';
+import 'transactions_list_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -86,59 +86,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _handleAccountTap(Account account) async {
-    final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => TransactionFormScreen(account: account),
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TransactionsListScreen(account: account),
+      ),
     );
 
-    // Refresh accounts if transaction was created successfully
-    if (result == true && mounted) {
-      // Show loading indicator
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Row(
-            children: [
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-              SizedBox(width: 12),
-              Text('Refreshing accounts...'),
-            ],
-          ),
-          duration: Duration(seconds: 2),
-        ),
-      );
-
-      // Small delay to ensure smooth UI transition
-      await Future.delayed(const Duration(milliseconds: 50));
-
-      // Refresh the accounts
+    // Refresh accounts when returning from transaction list
+    if (mounted) {
       await _loadAccounts();
-
-      // Hide loading snackbar and show success
-      if (mounted) {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 12),
-                Text('Accounts updated'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 1),
-          ),
-        );
-      }
     }
   }
 

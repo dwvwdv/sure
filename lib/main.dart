@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/accounts_provider.dart';
+import 'providers/transactions_provider.dart';
 import 'screens/backend_config_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -22,6 +23,7 @@ class SureApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => AccountsProvider()),
+        ChangeNotifierProvider(create: (_) => TransactionsProvider()),
       ],
       child: MaterialApp(
         title: 'Sure Finance',
