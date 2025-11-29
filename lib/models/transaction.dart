@@ -1,53 +1,66 @@
 class Transaction {
-  final String id;
+  final String? id;
   final String accountId;
   final String name;
   final String date;
-  final double amount;
+  final String amount;
   final String currency;
-  final String nature; // 'expense' or 'income'
+  final String nature; // "expense" or "income"
+  final String? notes;
 
   Transaction({
-    required this.id,
+    this.id,
     required this.accountId,
     required this.name,
     required this.date,
     required this.amount,
     required this.currency,
     required this.nature,
+    this.notes,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
-      id: json['id'].toString(),
-      accountId: json['account_id'].toString(),
-      name: json['name'] as String,
-      date: json['date'] as String,
-      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
-      currency: json['currency'] as String? ?? 'USD',
-      nature: json['nature'] as String? ?? 'expense',
+      id: json['id']?.toString(),
+      accountId: json['account_id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      date: json['date']?.toString() ?? '',
+      amount: json['amount']?.toString() ?? '0',
+      currency: json['currency']?.toString() ?? '',
+      nature: json['nature']?.toString() ?? 'expense',
+      notes: json['notes']?.toString(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      if (id != null) 'id': id,
       'account_id': accountId,
       'name': name,
       'date': date,
       'amount': amount,
       'currency': currency,
       'nature': nature,
+      if (notes != null) 'notes': notes,
     };
   }
 
   bool get isExpense => nature == 'expense';
   bool get isIncome => nature == 'income';
 
+  double get amountAsDouble {
+    try {
+      return double.parse(amount);
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
   String get formattedAmount {
     final symbol = _getCurrencySymbol();
     final sign = isExpense ? '-' : '+';
-    return '$sign$symbol${amount.toStringAsFixed(2)}';
+    final amountValue = amountAsDouble;
+    return '$sign$symbol${amountValue.toStringAsFixed(2)}';
   }
 
   String _getCurrencySymbol() {

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import '../models/account.dart';
-import '../screens/transactions_screen.dart';
 
 class AccountCard extends StatelessWidget {
   final Account account;
+  final VoidCallback? onTap;
 
   const AccountCard({
     super.key,
     required this.account,
+    this.onTap,
   });
 
   IconData _getAccountIcon() {
@@ -54,14 +55,7 @@ class AccountCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TransactionsScreen(account: account),
-            ),
-          );
-        },
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -129,11 +123,13 @@ class AccountCard extends StatelessWidget {
               ),
 
               // Navigation arrow
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              if (onTap != null) ...[
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.chevron_right,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ],
             ],
           ),
         ),

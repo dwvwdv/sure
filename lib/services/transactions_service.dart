@@ -63,46 +63,49 @@ class TransactionsService {
     required String accountId,
     required String name,
     required String date,
-    double amount = 0,
-    String? currency,
-    String nature = 'expense',
+    required String amount,
+    required String currency,
+    required String nature,
+    String? notes,
   }) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/api/v1/transactions');
+
+    final body = {
+      'transaction': {
+        'account_id': accountId,
+        'name': name,
+        'date': date,
+        'amount': amount,
+        'currency': currency,
+        'nature': nature,
+        if (notes != null) 'notes': notes,
+      }
+    };
 
     try {
       final response = await http.post(
         url,
         headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Accept': 'application/json',
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
         },
-        body: jsonEncode({
-          'transaction': {
-            'account_id': accountId,
-            'name': name,
-            'date': date,
-            'amount': amount,
-            if (currency != null) 'currency': currency,
-            'nature': nature,
-          },
-        }),
+        body: jsonEncode(body),
       );
 
+      final responseData = jsonDecode(response.body);
+
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final responseData = jsonDecode(response.body);
         return {
           'success': true,
-          'transaction': Transaction.fromJson(responseData['transaction']),
+          'transaction': Transaction.fromJson(responseData),
         };
       } else if (response.statusCode == 401) {
         return {
           'success': false,
           'error': 'unauthorized',
-          'message': 'Session expired. Please login again.',
         };
       } else {
-        final responseData = jsonDecode(response.body);
         return {
           'success': false,
           'error': responseData['error'] ?? 'Failed to create transaction',
@@ -122,9 +125,10 @@ class TransactionsService {
     required String transactionId,
     String? name,
     String? date,
-    double? amount,
+    String? amount,
     String? currency,
     String? nature,
+    String? notes,
   }) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/api/v1/transactions/$transactionId');
 
@@ -134,6 +138,7 @@ class TransactionsService {
     if (amount != null) transactionData['amount'] = amount;
     if (currency != null) transactionData['currency'] = currency;
     if (nature != null) transactionData['nature'] = nature;
+    if (notes != null) transactionData['notes'] = notes;
 
     try {
       final response = await http.put(

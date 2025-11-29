@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/account.dart';
 import '../providers/auth_provider.dart';
 import '../providers/transactions_provider.dart';
+import 'transaction_form_screen.dart';
 
 class TransactionsScreen extends StatefulWidget {
   final Account account;
@@ -400,7 +401,26 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           );
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _handleCreateTransaction(),
+        tooltip: 'Add Transaction',
+        child: const Icon(Icons.add),
+      ),
     );
+  }
+
+  Future<void> _handleCreateTransaction() async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => TransactionFormScreen(account: widget.account),
+    );
+
+    // Refresh transactions if one was created successfully
+    if (result == true && mounted) {
+      await _handleRefresh();
+    }
   }
 
   @override
