@@ -31,7 +31,9 @@ class Account {
 
   double get balanceAsDouble {
     try {
-      return double.parse(balance);
+      // Remove commas and any other non-numeric characters except dots and minus signs
+      final cleanedBalance = balance.replaceAll(RegExp(r'[^\d.-]'), '');
+      return double.parse(cleanedBalance);
     } catch (e) {
       return 0.0;
     }

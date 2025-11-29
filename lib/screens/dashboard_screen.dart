@@ -12,6 +12,9 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  bool _assetsExpanded = true;
+  bool _liabilitiesExpanded = true;
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +42,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _handleRefresh() async {
     await _loadAccounts();
+  }
+
+  String _formatCurrencyTotals(Map<String, double> totals) {
+    if (totals.isEmpty) return '';
+
+    final List<String> formatted = [];
+    totals.forEach((currency, amount) {
+      final symbol = _getCurrencySymbol(currency);
+      final formattedAmount = amount.toStringAsFixed(
+        amount.abs() < 1 && amount != 0 ? 4 : 0,
+      );
+      formatted.add('$currency$symbol${formattedAmount.replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+        (Match m) => '${m[1]},',
+      )}');
+    });
+
+    return formatted.join('、');
+  }
+
+  String _getCurrencySymbol(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'USD':
+        return '\$';
+      case 'TWD':
+        return '\$';
+      case 'BTC':
+        return '₿';
+      case 'ETH':
+        return 'Ξ';
+      case 'EUR':
+        return '€';
+      case 'GBP':
+        return '£';
+      case 'JPY':
+        return '¥';
+      case 'CNY':
+        return '¥';
+      default:
+        return ' ';
+    }
   }
 
   Future<void> _handleLogout() async {
@@ -199,54 +243,93 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
 
+                // Summary cards
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        if (accountsProvider.assetAccounts.isNotEmpty)
+                          _SummaryCard(
+                            title: 'Assets',
+                            totals: _formatCurrencyTotals(
+                              accountsProvider.assetTotalsByCurrency,
+                            ),
+                            color: Colors.green,
+                          ),
+                        if (accountsProvider.liabilityAccounts.isNotEmpty)
+                          _SummaryCard(
+                            title: 'Liabilities',
+                            totals: _formatCurrencyTotals(
+                              accountsProvider.liabilityTotalsByCurrency,
+                            ),
+                            color: Colors.red,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+
                 // Assets section
                 if (accountsProvider.assetAccounts.isNotEmpty) ...[
                   SliverToBoxAdapter(
-                    child: _SectionHeader(
+                    child: _CollapsibleSectionHeader(
                       title: 'Assets',
                       count: accountsProvider.assetAccounts.length,
                       color: Colors.green,
-                      totalAmount: accountsProvider.assetTotal,
+                      isExpanded: _assetsExpanded,
+                      onToggle: () {
+                        setState(() {
+                          _assetsExpanded = !_assetsExpanded;
+                        });
+                      },
                     ),
                   ),
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          return AccountCard(
-                            account: accountsProvider.assetAccounts[index],
-                          );
-                        },
-                        childCount: accountsProvider.assetAccounts.length,
+                  if (_assetsExpanded)
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            return AccountCard(
+                              account: accountsProvider.assetAccounts[index],
+                            );
+                          },
+                          childCount: accountsProvider.assetAccounts.length,
+                        ),
                       ),
                     ),
-                  ),
                 ],
 
                 // Liabilities section
                 if (accountsProvider.liabilityAccounts.isNotEmpty) ...[
                   SliverToBoxAdapter(
-                    child: _SectionHeader(
+                    child: _CollapsibleSectionHeader(
                       title: 'Liabilities',
                       count: accountsProvider.liabilityAccounts.length,
                       color: Colors.red,
-                      totalAmount: accountsProvider.liabilityTotal,
+                      isExpanded: _liabilitiesExpanded,
+                      onToggle: () {
+                        setState(() {
+                          _liabilitiesExpanded = !_liabilitiesExpanded;
+                        });
+                      },
                     ),
                   ),
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          return AccountCard(
-                            account: accountsProvider.liabilityAccounts[index],
-                          );
-                        },
-                        childCount: accountsProvider.liabilityAccounts.length,
+                  if (_liabilitiesExpanded)
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            return AccountCard(
+                              account: accountsProvider.liabilityAccounts[index],
+                            );
+                          },
+                          childCount: accountsProvider.liabilityAccounts.length,
+                        ),
                       ),
                     ),
-                  ),
                 ],
 
                 // Uncategorized accounts
@@ -296,57 +379,106 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
+class _SummaryCard extends StatelessWidget {
   final String title;
-  final int count;
+  final String totals;
   final Color color;
-  final double? totalAmount;
 
-  const _SectionHeader({
+  const _SummaryCard({
     required this.title,
-    required this.count,
+    required this.totals,
     required this.color,
-    this.totalAmount,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
       child: Row(
         children: [
           Container(
             width: 4,
-            height: 24,
+            height: 40,
             decoration: BoxDecoration(
               color: color,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  totals,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              count.toString(),
-              style: TextStyle(
+        ],
+      ),
+    );
+  }
+}
+
+class _CollapsibleSectionHeader extends StatelessWidget {
+  final String title;
+  final int count;
+  final Color color;
+  final bool isExpanded;
+  final VoidCallback onToggle;
+
+  const _CollapsibleSectionHeader({
+    required this.title,
+    required this.count,
+    required this.color,
+    required this.isExpanded,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onToggle,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+        child: Row(
+          children: [
+            Container(
+              width: 4,
+              height: 24,
+              decoration: BoxDecoration(
                 color: color,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-          ),
-          if (totalAmount != null) ...[
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -355,7 +487,7 @@ class _SectionHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                '\$${totalAmount!.toStringAsFixed(2)}',
+                count.toString(),
                 style: TextStyle(
                   color: color,
                   fontWeight: FontWeight.bold,
@@ -363,8 +495,13 @@ class _SectionHeader extends StatelessWidget {
                 ),
               ),
             ),
+            const Spacer(),
+            Icon(
+              isExpanded ? Icons.expand_less : Icons.expand_more,
+              color: color,
+            ),
           ],
-        ],
+        ),
       ),
     );
   }

@@ -27,16 +27,20 @@ class AccountsProvider with ChangeNotifier {
     return liabilities;
   }
 
-  double get assetTotal {
-    return _accounts
-        .where((a) => a.isAsset)
-        .fold(0.0, (sum, account) => sum + account.balanceAsDouble);
+  Map<String, double> get assetTotalsByCurrency {
+    final totals = <String, double>{};
+    for (var account in _accounts.where((a) => a.isAsset)) {
+      totals[account.currency] = (totals[account.currency] ?? 0.0) + account.balanceAsDouble;
+    }
+    return totals;
   }
 
-  double get liabilityTotal {
-    return _accounts
-        .where((a) => a.isLiability)
-        .fold(0.0, (sum, account) => sum + account.balanceAsDouble);
+  Map<String, double> get liabilityTotalsByCurrency {
+    final totals = <String, double>{};
+    for (var account in _accounts.where((a) => a.isLiability)) {
+      totals[account.currency] = (totals[account.currency] ?? 0.0) + account.balanceAsDouble;
+    }
+    return totals;
   }
 
   void _sortAccounts(List<Account> accounts) {
