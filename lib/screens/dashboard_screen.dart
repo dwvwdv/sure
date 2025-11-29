@@ -206,6 +206,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       title: 'Assets',
                       count: accountsProvider.assetAccounts.length,
                       color: Colors.green,
+                      totalAmount: accountsProvider.assetTotal,
                     ),
                   ),
                   SliverPadding(
@@ -230,6 +231,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       title: 'Liabilities',
                       count: accountsProvider.liabilityAccounts.length,
                       color: Colors.red,
+                      totalAmount: accountsProvider.liabilityTotal,
                     ),
                   ),
                   SliverPadding(
@@ -298,11 +300,13 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final int count;
   final Color color;
+  final double? totalAmount;
 
   const _SectionHeader({
     required this.title,
     required this.count,
     required this.color,
+    this.totalAmount,
   });
 
   @override
@@ -342,6 +346,24 @@ class _SectionHeader extends StatelessWidget {
               ),
             ),
           ),
+          if (totalAmount != null) ...[
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '\$${totalAmount!.toStringAsFixed(2)}',
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

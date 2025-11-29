@@ -15,11 +15,48 @@ class AccountsProvider with ChangeNotifier {
   String? get errorMessage => _errorMessage;
   Map<String, dynamic>? get pagination => _pagination;
 
-  List<Account> get assetAccounts => 
-      _accounts.where((a) => a.isAsset).toList();
-  
-  List<Account> get liabilityAccounts => 
-      _accounts.where((a) => a.isLiability).toList();
+  List<Account> get assetAccounts {
+    final assets = _accounts.where((a) => a.isAsset).toList();
+    _sortAccounts(assets);
+    return assets;
+  }
+
+  List<Account> get liabilityAccounts {
+    final liabilities = _accounts.where((a) => a.isLiability).toList();
+    _sortAccounts(liabilities);
+    return liabilities;
+  }
+
+  double get assetTotal {
+    return _accounts
+        .where((a) => a.isAsset)
+        .fold(0.0, (sum, account) => sum + account.balanceAsDouble);
+  }
+
+  double get liabilityTotal {
+    return _accounts
+        .where((a) => a.isLiability)
+        .fold(0.0, (sum, account) => sum + account.balanceAsDouble);
+  }
+
+  void _sortAccounts(List<Account> accounts) {
+    accounts.sort((a, b) {
+      // 1. Sort by account type
+      int typeComparison = a.accountType.compareTo(b.accountType);
+      if (typeComparison != 0) return typeComparison;
+
+      // 2. Sort by currency
+      int currencyComparison = a.currency.compareTo(b.currency);
+      if (currencyComparison != 0) return currencyComparison;
+
+      // 3. Sort by balance (descending - highest first)
+      int balanceComparison = b.balanceAsDouble.compareTo(a.balanceAsDouble);
+      if (balanceComparison != 0) return balanceComparison;
+
+      // 4. Sort by name
+      return a.name.compareTo(b.name);
+    });
+  }
 
   Future<bool> fetchAccounts({
     required String accessToken,
