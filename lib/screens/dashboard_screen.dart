@@ -94,8 +94,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
 
     // Refresh accounts if transaction was created successfully
-    if (result == true) {
+    if (result == true && mounted) {
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              SizedBox(width: 12),
+              Text('Refreshing accounts...'),
+            ],
+          ),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Wait a moment for backend to process the transaction
+      await Future.delayed(const Duration(milliseconds: 800));
+
+      // Refresh the accounts
       await _loadAccounts();
+
+      // Hide loading snackbar and show success
+      if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 12),
+                Text('Accounts updated'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
     }
   }
 
