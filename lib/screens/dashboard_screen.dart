@@ -50,16 +50,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final List<String> formatted = [];
     totals.forEach((currency, amount) {
       final symbol = _getCurrencySymbol(currency);
-      final formattedAmount = amount.toStringAsFixed(
-        amount.abs() < 1 && amount != 0 ? 4 : 0,
-      );
-      formatted.add('$currency$symbol${formattedAmount.replaceAllMapped(
+      final isSmallAmount = amount.abs() < 1 && amount != 0;
+      final formattedAmount = amount.toStringAsFixed(isSmallAmount ? 4 : 0);
+
+      // Split into integer and decimal parts
+      final parts = formattedAmount.split('.');
+      final integerPart = parts[0].replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
         (Match m) => '${m[1]},',
-      )}');
+      );
+
+      final finalAmount = parts.length > 1 ? '$integerPart.${parts[1]}' : integerPart;
+      formatted.add('$currency$symbol$finalAmount');
     });
 
-    return formatted.join('、');
+    return formatted.join(' • ');
   }
 
   String _getCurrencySymbol(String currency) {
@@ -251,7 +256,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         if (accountsProvider.assetAccounts.isNotEmpty)
                           _SummaryCard(
-                            title: 'Assets',
+                            title: 'Assets Total',
                             totals: _formatCurrencyTotals(
                               accountsProvider.assetTotalsByCurrency,
                             ),
@@ -259,7 +264,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         if (accountsProvider.liabilityAccounts.isNotEmpty)
                           _SummaryCard(
-                            title: 'Liabilities',
+                            title: 'Liabilities Total',
                             totals: _formatCurrencyTotals(
                               accountsProvider.liabilityTotalsByCurrency,
                             ),
