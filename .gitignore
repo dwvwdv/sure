@@ -16,6 +16,10 @@ android/local.properties
 android/app/build/
 android/gradlew
 android/gradlew.bat
+android/key.properties
+android/app/*.keystore
+android/app/*.jks
+keystore-base64.txt
 
 # iOS
 ios/Pods/
