@@ -122,7 +122,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       if (mounted) {
         if (result['success'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Transaction created successfully'),
               backgroundColor: Colors.green,
             ),
