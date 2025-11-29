@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/account.dart';
 import '../providers/auth_provider.dart';
 import '../providers/accounts_provider.dart';
 import '../widgets/account_card.dart';
+import 'transaction_form_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -83,6 +85,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _handleAccountTap(Account account) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => TransactionFormScreen(account: account),
+    );
+
+    // Refresh accounts if transaction was created successfully
+    if (result == true && mounted) {
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              SizedBox(width: 12),
+              Text('Refreshing accounts...'),
+            ],
+          ),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Small delay to ensure smooth UI transition
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      // Refresh the accounts
+      await _loadAccounts();
+
+      // Hide loading snackbar and show success
+      if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 12),
+                Text('Accounts updated'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _handleLogout() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -105,7 +164,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (confirmed == true && mounted) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final accountsProvider = Provider.of<AccountsProvider>(context, listen: false);
-      
+
       accountsProvider.clearAccounts();
       await authProvider.logout();
     }
@@ -287,8 +346,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       sliver: SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
+                            final account = accountsProvider.assetAccounts[index];
                             return AccountCard(
-                              account: accountsProvider.assetAccounts[index],
+                              account: account,
+                              onTap: () => _handleAccountTap(account),
                             );
                           },
                           childCount: accountsProvider.assetAccounts.length,
@@ -318,8 +379,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       sliver: SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
+                            final account = accountsProvider.liabilityAccounts[index];
                             return AccountCard(
-                              account: accountsProvider.liabilityAccounts[index],
+                              account: account,
+                              onTap: () => _handleAccountTap(account),
                             );
                           },
                           childCount: accountsProvider.liabilityAccounts.length,
@@ -365,7 +428,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
-              return AccountCard(account: uncategorized[index]);
+              final account = uncategorized[index];
+              return AccountCard(
+                account: account,
+                onTap: () => _handleAccountTap(account),
+              );
             },
             childCount: uncategorized.length,
           ),
