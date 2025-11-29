@@ -29,6 +29,16 @@ class Account {
   bool get isAsset => classification == 'asset';
   bool get isLiability => classification == 'liability';
 
+  double get balanceAsDouble {
+    try {
+      // Remove commas and any other non-numeric characters except dots and minus signs
+      final cleanedBalance = balance.replaceAll(RegExp(r'[^\d.-]'), '');
+      return double.parse(cleanedBalance);
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
   String get displayAccountType {
     switch (accountType) {
       case 'depository':

@@ -12,6 +12,9 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  bool _assetsExpanded = true;
+  bool _liabilitiesExpanded = true;
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +42,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _handleRefresh() async {
     await _loadAccounts();
+  }
+
+  List<String> _formatCurrencyItem(String currency, double amount) {
+    final symbol = _getCurrencySymbol(currency);
+    final isSmallAmount = amount.abs() < 1 && amount != 0;
+    final formattedAmount = amount.toStringAsFixed(isSmallAmount ? 4 : 0);
+
+    // Split into integer and decimal parts
+    final parts = formattedAmount.split('.');
+    final integerPart = parts[0].replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]},',
+    );
+
+    final finalAmount = parts.length > 1 ? '$integerPart.${parts[1]}' : integerPart;
+    return [currency, '$symbol$finalAmount'];
+  }
+
+  String _getCurrencySymbol(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'USD':
+        return '\$';
+      case 'TWD':
+        return '\$';
+      case 'BTC':
+        return '₿';
+      case 'ETH':
+        return 'Ξ';
+      case 'EUR':
+        return '€';
+      case 'GBP':
+        return '£';
+      case 'JPY':
+        return '¥';
+      case 'CNY':
+        return '¥';
+      default:
+        return ' ';
+    }
   }
 
   Future<void> _handleLogout() async {
@@ -199,52 +241,91 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
 
+                // Summary cards
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        if (accountsProvider.assetAccounts.isNotEmpty)
+                          _SummaryCard(
+                            title: 'Assets Total',
+                            totals: accountsProvider.assetTotalsByCurrency,
+                            color: Colors.green,
+                            formatCurrencyItem: _formatCurrencyItem,
+                          ),
+                        if (accountsProvider.liabilityAccounts.isNotEmpty)
+                          _SummaryCard(
+                            title: 'Liabilities Total',
+                            totals: accountsProvider.liabilityTotalsByCurrency,
+                            color: Colors.red,
+                            formatCurrencyItem: _formatCurrencyItem,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+
                 // Assets section
                 if (accountsProvider.assetAccounts.isNotEmpty) ...[
                   SliverToBoxAdapter(
-                    child: _SectionHeader(
+                    child: _CollapsibleSectionHeader(
                       title: 'Assets',
                       count: accountsProvider.assetAccounts.length,
                       color: Colors.green,
+                      isExpanded: _assetsExpanded,
+                      onToggle: () {
+                        setState(() {
+                          _assetsExpanded = !_assetsExpanded;
+                        });
+                      },
                     ),
                   ),
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          return AccountCard(
-                            account: accountsProvider.assetAccounts[index],
-                          );
-                        },
-                        childCount: accountsProvider.assetAccounts.length,
+                  if (_assetsExpanded)
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            return AccountCard(
+                              account: accountsProvider.assetAccounts[index],
+                            );
+                          },
+                          childCount: accountsProvider.assetAccounts.length,
+                        ),
                       ),
                     ),
-                  ),
                 ],
 
                 // Liabilities section
                 if (accountsProvider.liabilityAccounts.isNotEmpty) ...[
                   SliverToBoxAdapter(
-                    child: _SectionHeader(
+                    child: _CollapsibleSectionHeader(
                       title: 'Liabilities',
                       count: accountsProvider.liabilityAccounts.length,
                       color: Colors.red,
+                      isExpanded: _liabilitiesExpanded,
+                      onToggle: () {
+                        setState(() {
+                          _liabilitiesExpanded = !_liabilitiesExpanded;
+                        });
+                      },
                     ),
                   ),
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          return AccountCard(
-                            account: accountsProvider.liabilityAccounts[index],
-                          );
-                        },
-                        childCount: accountsProvider.liabilityAccounts.length,
+                  if (_liabilitiesExpanded)
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            return AccountCard(
+                              account: accountsProvider.liabilityAccounts[index],
+                            );
+                          },
+                          childCount: accountsProvider.liabilityAccounts.length,
+                        ),
                       ),
                     ),
-                  ),
                 ],
 
                 // Uncategorized accounts
@@ -273,7 +354,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return [
       SliverToBoxAdapter(
-        child: _SectionHeader(
+        child: _SimpleSectionHeader(
           title: 'Other Accounts',
           count: uncategorized.length,
           color: Colors.grey,
@@ -294,12 +375,230 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
+class _SummaryCard extends StatelessWidget {
+  final String title;
+  final Map<String, double> totals;
+  final Color color;
+  final List<String> Function(String currency, double amount) formatCurrencyItem;
+
+  const _SummaryCard({
+    required this.title,
+    required this.totals,
+    required this.color,
+    required this.formatCurrencyItem,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = totals.entries.toList();
+    final rows = <Widget>[];
+
+    // Group currencies into pairs (2 per row)
+    for (int i = 0; i < entries.length; i += 2) {
+      final first = entries[i];
+      final firstFormatted = formatCurrencyItem(first.key, first.value);
+
+      if (i + 1 < entries.length) {
+        // Two items in this row
+        final second = entries[i + 1];
+        final secondFormatted = formatCurrencyItem(second.key, second.value);
+
+        rows.add(
+          Row(
+            children: [
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      firstFormatted[0],
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      firstFormatted[1],
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                ' | ',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w300,
+                  color: color.withOpacity(0.5),
+                ),
+              ),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      secondFormatted[0],
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      secondFormatted[1],
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      } else {
+        // Only one item in this row
+        rows.add(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                firstFormatted[0],
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                firstFormatted[1],
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      if (i + 2 < entries.length) {
+        rows.add(const SizedBox(height: 4));
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 4,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ...rows,
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CollapsibleSectionHeader extends StatelessWidget {
+  final String title;
+  final int count;
+  final Color color;
+  final bool isExpanded;
+  final VoidCallback onToggle;
+
+  const _CollapsibleSectionHeader({
+    required this.title,
+    required this.count,
+    required this.color,
+    required this.isExpanded,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onToggle,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+        child: Row(
+          children: [
+            Container(
+              width: 4,
+              height: 24,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                count.toString(),
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            const Spacer(),
+            Icon(
+              isExpanded ? Icons.expand_less : Icons.expand_more,
+              color: color,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SimpleSectionHeader extends StatelessWidget {
   final String title;
   final int count;
   final Color color;
 
-  const _SectionHeader({
+  const _SimpleSectionHeader({
     required this.title,
     required this.count,
     required this.color,
