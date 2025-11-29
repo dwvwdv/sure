@@ -86,11 +86,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _handleAccountTap(Account account) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TransactionFormScreen(account: account),
-      ),
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => TransactionFormScreen(account: account),
     );
 
     // Refresh accounts if transaction was created successfully

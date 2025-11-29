@@ -164,155 +164,210 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('New Transaction'),
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) {
+          return Column(
             children: [
-              // Account info card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.account_balance_wallet,
-                        color: colorScheme.primary,
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Title
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'New Transaction',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.account.name,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              // Form content
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: EdgeInsets.only(
+                    left: 24,
+                    right: 24,
+                    top: 16,
+                    bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Account info card
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.account_balance_wallet,
+                                  color: colorScheme.primary,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        widget.account.name,
+                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${widget.account.balance} ${widget.account.currency}',
+                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${widget.account.balance} ${widget.account.currency}',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Transaction type selection
+                        Text(
+                          'Type',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SegmentedButton<String>(
+                          segments: const [
+                            ButtonSegment<String>(
+                              value: 'expense',
+                              label: Text('Expense'),
+                              icon: Icon(Icons.arrow_downward),
+                            ),
+                            ButtonSegment<String>(
+                              value: 'income',
+                              label: Text('Income'),
+                              icon: Icon(Icons.arrow_upward),
                             ),
                           ],
+                          selected: {_nature},
+                          onSelectionChanged: (Set<String> newSelection) {
+                            setState(() {
+                              _nature = newSelection.first;
+                            });
+                          },
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
-              // Transaction type selection
-              Text(
-                'Type',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment<String>(
-                    value: 'expense',
-                    label: Text('Expense'),
-                    icon: Icon(Icons.arrow_downward),
-                  ),
-                  ButtonSegment<String>(
-                    value: 'income',
-                    label: Text('Income'),
-                    icon: Icon(Icons.arrow_upward),
-                  ),
-                ],
-                selected: {_nature},
-                onSelectionChanged: (Set<String> newSelection) {
-                  setState(() {
-                    _nature = newSelection.first;
-                  });
-                },
-              ),
-              const SizedBox(height: 24),
-
-              // Amount field
-              TextFormField(
-                controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  labelText: 'Amount *',
-                  prefixIcon: const Icon(Icons.attach_money),
-                  suffixText: widget.account.currency,
-                  helperText: 'Required',
-                ),
-                validator: _validateAmount,
-              ),
-              const SizedBox(height: 24),
-
-              // More button
-              TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _showMoreFields = !_showMoreFields;
-                  });
-                },
-                icon: Icon(_showMoreFields ? Icons.expand_less : Icons.expand_more),
-                label: Text(_showMoreFields ? 'Less' : 'More'),
-              ),
-
-              // Optional fields (shown when More is clicked)
-              if (_showMoreFields) ...[
-                const SizedBox(height: 16),
-
-                // Date field
-                TextFormField(
-                  controller: _dateController,
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Date',
-                    prefixIcon: Icon(Icons.calendar_today),
-                    helperText: 'Optional (default: today)',
-                  ),
-                  onTap: _selectDate,
-                ),
-                const SizedBox(height: 16),
-
-                // Name field
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name',
-                    prefixIcon: Icon(Icons.label),
-                    helperText: 'Optional (default: SureApp)',
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 32),
-
-              // Submit button
-              ElevatedButton(
-                onPressed: _isSubmitting ? null : _handleSubmit,
-                child: _isSubmitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
+                        // Amount field
+                        TextFormField(
+                          controller: _amountController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: InputDecoration(
+                            labelText: 'Amount *',
+                            prefixIcon: const Icon(Icons.attach_money),
+                            suffixText: widget.account.currency,
+                            helperText: 'Required',
+                          ),
+                          validator: _validateAmount,
                         ),
-                      )
-                    : const Text('Create Transaction'),
+                        const SizedBox(height: 24),
+
+                        // More button
+                        TextButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _showMoreFields = !_showMoreFields;
+                            });
+                          },
+                          icon: Icon(_showMoreFields ? Icons.expand_less : Icons.expand_more),
+                          label: Text(_showMoreFields ? 'Less' : 'More'),
+                        ),
+
+                        // Optional fields (shown when More is clicked)
+                        if (_showMoreFields) ...[
+                          const SizedBox(height: 16),
+
+                          // Date field
+                          TextFormField(
+                            controller: _dateController,
+                            readOnly: true,
+                            decoration: const InputDecoration(
+                              labelText: 'Date',
+                              prefixIcon: Icon(Icons.calendar_today),
+                              helperText: 'Optional (default: today)',
+                            ),
+                            onTap: _selectDate,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Name field
+                          TextFormField(
+                            controller: _nameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Name',
+                              prefixIcon: Icon(Icons.label),
+                              helperText: 'Optional (default: SureApp)',
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: 32),
+
+                        // Submit button
+                        ElevatedButton(
+                          onPressed: _isSubmitting ? null : _handleSubmit,
+                          child: _isSubmitting
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Create Transaction'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
   }
