@@ -86,8 +86,19 @@ class TransactionsService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> responseData = jsonDecode(response.body);
-        final transactions = responseData
+        final responseData = jsonDecode(response.body);
+
+        // Handle both array and object responses
+        List<dynamic> transactionsJson;
+        if (responseData is List) {
+          transactionsJson = responseData;
+        } else if (responseData is Map && responseData.containsKey('transactions')) {
+          transactionsJson = responseData['transactions'];
+        } else {
+          transactionsJson = [];
+        }
+
+        final transactions = transactionsJson
             .map((json) => Transaction.fromJson(json))
             .toList();
 
