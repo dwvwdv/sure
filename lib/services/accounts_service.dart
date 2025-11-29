@@ -9,10 +9,8 @@ class AccountsService {
     int page = 1,
     int perPage = 25,
   }) async {
-    // Add timestamp to prevent caching
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
     final url = Uri.parse(
-      '${ApiConfig.baseUrl}/api/v1/accounts?page=$page&per_page=$perPage&_t=$timestamp',
+      '${ApiConfig.baseUrl}/api/v1/accounts?page=$page&per_page=$perPage',
     );
 
     final response = await http.get(
@@ -20,8 +18,6 @@ class AccountsService {
       headers: {
         'Authorization': 'Bearer $accessToken',
         'Accept': 'application/json',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
       },
     );
 

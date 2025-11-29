@@ -116,8 +116,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       );
 
-      // Small delay to ensure modal animation completes and any backend processing finishes
-      await Future.delayed(const Duration(milliseconds: 300));
+      // Small delay to ensure smooth UI transition
+      await Future.delayed(const Duration(milliseconds: 50));
 
       // Refresh the accounts
       await _loadAccounts();
