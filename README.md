@@ -1,9 +1,15 @@
 # Sure Mobile
 
-A Flutter mobile application for Sure personal finance management. This app provides basic functionality to:
+A Flutter mobile application for [Sure](https://github.com/we-promise/sure) personal finance management system. This is the mobile client that connects to the Sure backend server.
+
+## About
+
+This app is a mobile companion to the [Sure personal finance management system](https://github.com/we-promise/sure). It provides basic functionality to:
 
 - **Login** - Authenticate with your Sure Finance server
 - **View Balance** - See all your accounts and their balances
+
+For more detailed technical documentation, see [docs/TECHNICAL_GUIDE.md](docs/TECHNICAL_GUIDE.md).
 
 ## Features
 
