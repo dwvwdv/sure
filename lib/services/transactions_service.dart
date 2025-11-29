@@ -64,4 +64,138 @@ class TransactionsService {
       };
     }
   }
+
+  Future<Map<String, dynamic>> getTransactions({
+    required String accessToken,
+    String? accountId,
+  }) async {
+    var url = Uri.parse('${ApiConfig.baseUrl}/api/v1/transactions');
+
+    if (accountId != null) {
+      url = Uri.parse('${ApiConfig.baseUrl}/api/v1/transactions?account_id=$accountId');
+    }
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+
+        // Handle both array and object responses
+        List<dynamic> transactionsJson;
+        if (responseData is List) {
+          transactionsJson = responseData;
+        } else if (responseData is Map && responseData.containsKey('transactions')) {
+          transactionsJson = responseData['transactions'];
+        } else {
+          transactionsJson = [];
+        }
+
+        final transactions = transactionsJson
+            .map((json) => Transaction.fromJson(json))
+            .toList();
+
+        return {
+          'success': true,
+          'transactions': transactions,
+        };
+      } else if (response.statusCode == 401) {
+        return {
+          'success': false,
+          'error': 'unauthorized',
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Failed to fetch transactions',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteTransaction({
+    required String accessToken,
+    required String transactionId,
+  }) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/api/v1/transactions/$transactionId');
+
+    try {
+      final response = await http.delete(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return {
+          'success': true,
+        };
+      } else if (response.statusCode == 401) {
+        return {
+          'success': false,
+          'error': 'unauthorized',
+        };
+      } else {
+        final responseData = jsonDecode(response.body);
+        return {
+          'success': false,
+          'error': responseData['error'] ?? 'Failed to delete transaction',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteMultipleTransactions({
+    required String accessToken,
+    required List<String> transactionIds,
+  }) async {
+    try {
+      final results = await Future.wait(
+        transactionIds.map((id) => deleteTransaction(
+          accessToken: accessToken,
+          transactionId: id,
+        )),
+      );
+
+      final allSuccess = results.every((result) => result['success'] == true);
+
+      if (allSuccess) {
+        return {
+          'success': true,
+          'deleted_count': transactionIds.length,
+        };
+      } else {
+        final failedCount = results.where((r) => r['success'] != true).length;
+        return {
+          'success': false,
+          'error': 'Failed to delete $failedCount transactions',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error: ${e.toString()}',
+      };
+    }
+  }
 }

@@ -5,6 +5,7 @@ import '../providers/auth_provider.dart';
 import '../providers/accounts_provider.dart';
 import '../widgets/account_card.dart';
 import 'transaction_form_screen.dart';
+import 'transactions_list_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -139,6 +140,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _handleAccountSwipe(Account account) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TransactionsListScreen(account: account),
+      ),
+    );
+
+    // Refresh accounts when returning from transaction list
+    if (mounted) {
+      await _loadAccounts();
     }
   }
 
@@ -350,6 +365,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             return AccountCard(
                               account: account,
                               onTap: () => _handleAccountTap(account),
+                              onSwipe: () => _handleAccountSwipe(account),
                             );
                           },
                           childCount: accountsProvider.assetAccounts.length,
@@ -383,6 +399,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             return AccountCard(
                               account: account,
                               onTap: () => _handleAccountTap(account),
+                              onSwipe: () => _handleAccountSwipe(account),
                             );
                           },
                           childCount: accountsProvider.liabilityAccounts.length,
@@ -432,6 +449,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               return AccountCard(
                 account: account,
                 onTap: () => _handleAccountTap(account),
+                onSwipe: () => _handleAccountSwipe(account),
               );
             },
             childCount: uncategorized.length,

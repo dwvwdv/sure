@@ -100,10 +100,33 @@ flutter run -d chrome
 
 This app integrates with the Sure Finance Rails API:
 
+### Authentication
 - `POST /api/v1/auth/login` - User authentication
 - `POST /api/v1/auth/signup` - User registration
 - `POST /api/v1/auth/refresh` - Token refresh
+
+### Accounts
 - `GET /api/v1/accounts` - Fetch user accounts
+
+### Transactions
+- `GET /api/v1/transactions` - Get all transactions (optionally filter by `account_id` query parameter)
+- `POST /api/v1/transactions` - Create a new transaction
+- `PUT /api/v1/transactions/:id` - Update an existing transaction
+- `DELETE /api/v1/transactions/:id` - Delete a transaction
+
+#### Transaction POST Request Format
+```json
+{
+  "transaction": {
+    "account_id": "2980ffb0-f595-4572-be0e-7b9b9c53949b",  // required
+    "name": "test",  // required
+    "date": "2025-07-15",  // required
+    "amount": 100,  // optional, defaults to 0
+    "currency": "AUD",  // optional, defaults to your profile currency
+    "nature": "expense"  // optional, defaults to "expense", other option is "income"
+  }
+}
+```
 
 ## CI/CD
 
