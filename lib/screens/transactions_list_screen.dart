@@ -32,9 +32,10 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final transactionsProvider = Provider.of<TransactionsProvider>(context, listen: false);
 
-    if (authProvider.accessToken != null) {
+    final accessToken = await authProvider.getValidAccessToken();
+    if (accessToken != null) {
       await transactionsProvider.fetchTransactions(
-        accessToken: authProvider.accessToken!,
+        accessToken: accessToken,
         accountId: widget.account.id,
       );
     }
@@ -81,87 +82,42 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
       ),
     );
 
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final transactionsProvider = Provider.of<TransactionsProvider>(context, listen: false);
 
-    if (authProvider.accessToken != null) {
+    final accessToken = await authProvider.getValidAccessToken();
+    if (accessToken != null) {
       final success = await transactionsProvider.deleteMultipleTransactions(
-        accessToken: authProvider.accessToken!,
+        accessToken: accessToken,
         transactionIds: _selectedTransactions.toList(),
       );
 
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Deleted ${_selectedTransactions.length} transaction(s)'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        setState(() {
-          _selectedTransactions.clear();
-          _isSelectionMode = false;
-        });
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to delete transactions'),
-            backgroundColor: Colors.red,
-          ),
-        );
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Deleted ${_selectedTransactions.length} transaction(s)'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          setState(() {
+            _selectedTransactions.clear();
+            _isSelectionMode = false;
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to delete transactions'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
 
-  Future<void> _deleteSingleTransaction(Transaction transaction) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Transaction'),
-        content: Text('Are you sure you want to delete "${transaction.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || transaction.id == null) return;
-
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final transactionsProvider = Provider.of<TransactionsProvider>(context, listen: false);
-
-    if (authProvider.accessToken != null) {
-      final success = await transactionsProvider.deleteTransaction(
-        accessToken: authProvider.accessToken!,
-        transactionId: transaction.id!,
-      );
-
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Transaction deleted'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to delete transaction'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
 
   void _showAddTransactionForm() {
     showModalBottomSheet(
@@ -301,13 +257,14 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                   onDismissed: (direction) async {
                     if (transaction.id != null) {
                       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                      if (authProvider.accessToken != null) {
+                      final accessToken = await authProvider.getValidAccessToken();
+                      if (accessToken != null) {
                         final success = await transactionsProvider.deleteTransaction(
-                          accessToken: authProvider.accessToken!,
+                          accessToken: accessToken,
                           transactionId: transaction.id!,
                         );
 
-                        if (success && mounted) {
+                        if (mounted && success) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Transaction deleted'),
