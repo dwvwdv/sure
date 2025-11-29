@@ -44,27 +44,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await _loadAccounts();
   }
 
-  String _formatCurrencyTotals(Map<String, double> totals) {
-    if (totals.isEmpty) return '';
+  List<String> _formatCurrencyItem(String currency, double amount) {
+    final symbol = _getCurrencySymbol(currency);
+    final isSmallAmount = amount.abs() < 1 && amount != 0;
+    final formattedAmount = amount.toStringAsFixed(isSmallAmount ? 4 : 0);
 
-    final List<String> formatted = [];
-    totals.forEach((currency, amount) {
-      final symbol = _getCurrencySymbol(currency);
-      final isSmallAmount = amount.abs() < 1 && amount != 0;
-      final formattedAmount = amount.toStringAsFixed(isSmallAmount ? 4 : 0);
+    // Split into integer and decimal parts
+    final parts = formattedAmount.split('.');
+    final integerPart = parts[0].replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]},',
+    );
 
-      // Split into integer and decimal parts
-      final parts = formattedAmount.split('.');
-      final integerPart = parts[0].replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-        (Match m) => '${m[1]},',
-      );
-
-      final finalAmount = parts.length > 1 ? '$integerPart.${parts[1]}' : integerPart;
-      formatted.add('$currency$symbol$finalAmount');
-    });
-
-    return formatted.join(' • ');
+    final finalAmount = parts.length > 1 ? '$integerPart.${parts[1]}' : integerPart;
+    return [currency, '$symbol$finalAmount'];
   }
 
   String _getCurrencySymbol(String currency) {
@@ -257,18 +250,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         if (accountsProvider.assetAccounts.isNotEmpty)
                           _SummaryCard(
                             title: 'Assets Total',
-                            totals: _formatCurrencyTotals(
-                              accountsProvider.assetTotalsByCurrency,
-                            ),
+                            totals: accountsProvider.assetTotalsByCurrency,
                             color: Colors.green,
+                            formatCurrencyItem: _formatCurrencyItem,
                           ),
                         if (accountsProvider.liabilityAccounts.isNotEmpty)
                           _SummaryCard(
                             title: 'Liabilities Total',
-                            totals: _formatCurrencyTotals(
-                              accountsProvider.liabilityTotalsByCurrency,
-                            ),
+                            totals: accountsProvider.liabilityTotalsByCurrency,
                             color: Colors.red,
+                            formatCurrencyItem: _formatCurrencyItem,
                           ),
                       ],
                     ),
@@ -386,17 +377,78 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 class _SummaryCard extends StatelessWidget {
   final String title;
-  final String totals;
+  final Map<String, double> totals;
   final Color color;
+  final List<String> Function(String currency, double amount) formatCurrencyItem;
 
   const _SummaryCard({
     required this.title,
     required this.totals,
     required this.color,
+    required this.formatCurrencyItem,
   });
 
   @override
   Widget build(BuildContext context) {
+    final entries = totals.entries.toList();
+    final rows = <Widget>[];
+
+    // Group currencies into pairs (2 per row)
+    for (int i = 0; i < entries.length; i += 2) {
+      final first = entries[i];
+      final firstFormatted = formatCurrencyItem(first.key, first.value);
+
+      if (i + 1 < entries.length) {
+        // Two items in this row
+        final second = entries[i + 1];
+        final secondFormatted = formatCurrencyItem(second.key, second.value);
+
+        rows.add(
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${firstFormatted[0]} ${firstFormatted[1]}',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Text(
+                ' | ',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w300,
+                  color: color.withOpacity(0.5),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  '${secondFormatted[0]} ${secondFormatted[1]}',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      } else {
+        // Only one item in this row
+        rows.add(
+          Text(
+            '${firstFormatted[0]} ${firstFormatted[1]}',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        );
+      }
+
+      if (i + 2 < entries.length) {
+        rows.add(const SizedBox(height: 4));
+      }
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -409,6 +461,7 @@ class _SummaryCard extends StatelessWidget {
         ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 4,
@@ -430,13 +483,8 @@ class _SummaryCard extends StatelessWidget {
                     color: color,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  totals,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                const SizedBox(height: 8),
+                ...rows,
               ],
             ),
           ),
