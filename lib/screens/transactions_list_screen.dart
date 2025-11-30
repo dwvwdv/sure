@@ -336,8 +336,10 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                               children: [
                                 Text(
                                   () {
+                                    final negativeCount = '-'.allMatches(transaction.amount).length;
                                     final absAmount = transaction.amount.replaceAll('-', '');
-                                    return transaction.isExpense ? '-$absAmount' : absAmount;
+                                    // 偶數個負號 = 正數，奇數個負號 = 負數
+                                    return negativeCount % 2 == 0 ? absAmount : '-$absAmount';
                                   }(),
                                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                         fontWeight: FontWeight.bold,
