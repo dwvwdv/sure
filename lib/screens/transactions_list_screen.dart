@@ -335,9 +335,10 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  transaction.isExpense
-                                    ? '-${transaction.amount.replaceFirst('-', '')}'
-                                    : transaction.amount.replaceFirst('-', ''),
+                                  () {
+                                    final absAmount = transaction.amount.replaceAll('-', '');
+                                    return transaction.isExpense ? '-$absAmount' : absAmount;
+                                  }(),
                                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                         fontWeight: FontWeight.bold,
                                         color: transaction.isExpense ? Colors.red : Colors.green,
