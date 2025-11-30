@@ -48,6 +48,9 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Generate app icons
+        run: flutter pub run flutter_launcher_icons
+
       - name: Analyze code
         run: flutter analyze --no-fatal-infos
 
