@@ -108,12 +108,16 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
       final dateParts = _dateController.text.split('/');
       final apiDate = '${dateParts[0]}-${dateParts[1]}-${dateParts[2]}';
 
+      // For income, send negative amount to backend
+      final amount = _amountController.text.trim();
+      final amountToSend = _nature == 'income' ? '-$amount' : amount;
+
       final result = await _transactionsService.createTransaction(
         accessToken: accessToken,
         accountId: widget.account.id,
         name: _nameController.text.trim(),
         date: apiDate,
-        amount: _amountController.text.trim(),
+        amount: amountToSend,
         currency: widget.account.currency,
         nature: _nature,
         notes: 'This transaction via mobile app.',
