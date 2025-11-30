@@ -28,9 +28,14 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
   }
 
   // 計算負號個數並決定顯示邏輯
-  Map<String, dynamic> _getAmountDisplayInfo(String amount) {
+  Map<String, dynamic> _getAmountDisplayInfo(String amount, bool isAsset) {
     // 計算負號個數
     int negativeCount = '-'.allMatches(amount).length;
+
+    // Asset 帳戶需要在負號個數上 +1 進行微調
+    if (isAsset) {
+      negativeCount += 1;
+    }
 
     // 移除所有負號以獲取純數字
     String cleanAmount = amount.replaceAll('-', '');
@@ -317,7 +322,10 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                               ),
                             Builder(
                               builder: (context) {
-                                final displayInfo = _getAmountDisplayInfo(transaction.amount);
+                                final displayInfo = _getAmountDisplayInfo(
+                                  transaction.amount,
+                                  widget.account.isAsset,
+                                );
                                 return Container(
                                   width: 48,
                                   height: 48,
@@ -355,7 +363,10 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                             ),
                             Builder(
                               builder: (context) {
-                                final displayInfo = _getAmountDisplayInfo(transaction.amount);
+                                final displayInfo = _getAmountDisplayInfo(
+                                  transaction.amount,
+                                  widget.account.isAsset,
+                                );
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
