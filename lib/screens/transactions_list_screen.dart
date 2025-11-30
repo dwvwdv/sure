@@ -27,6 +27,26 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
     _loadTransactions();
   }
 
+  // 計算負號個數並決定顯示邏輯
+  Map<String, dynamic> _getAmountDisplayInfo(String amount) {
+    // 計算負號個數
+    int negativeCount = '-'.allMatches(amount).length;
+
+    // 移除所有負號以獲取純數字
+    String cleanAmount = amount.replaceAll('-', '');
+
+    // 偶數個負號 = 正數，奇數個負號 = 負數
+    bool isPositive = negativeCount % 2 == 0;
+
+    return {
+      'isPositive': isPositive,
+      'displayAmount': cleanAmount,
+      'color': isPositive ? Colors.green : Colors.red,
+      'icon': isPositive ? Icons.arrow_upward : Icons.arrow_downward,
+      'prefix': isPositive ? '' : '-',
+    };
+  }
+
   Future<void> _loadTransactions() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final transactionsProvider = Provider.of<TransactionsProvider>(context, listen: false);
@@ -295,20 +315,22 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                                       : null,
                                 ),
                               ),
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: (transaction.isExpense ? Colors.red : Colors.green)
-                                    .withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                transaction.isExpense
-                                    ? Icons.arrow_upward
-                                    : Icons.arrow_downward,
-                                color: transaction.isExpense ? Colors.red : Colors.green,
-                              ),
+                            Builder(
+                              builder: (context) {
+                                final displayInfo = _getAmountDisplayInfo(transaction.amount);
+                                return Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: (displayInfo['color'] as Color).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    displayInfo['icon'] as IconData,
+                                    color: displayInfo['color'] as Color,
+                                  ),
+                                );
+                              },
                             ),
                             const SizedBox(width: 16),
                             Expanded(
@@ -331,24 +353,29 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                                 ],
                               ),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  '${transaction.isExpense ? '-' : '+'}${transaction.amount}',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: transaction.isExpense ? Colors.red : Colors.green,
-                                      ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  transaction.currency,
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: colorScheme.onSurfaceVariant,
-                                      ),
-                                ),
-                              ],
+                            Builder(
+                              builder: (context) {
+                                final displayInfo = _getAmountDisplayInfo(transaction.amount);
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      '${displayInfo['prefix']}${displayInfo['displayAmount']}',
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: displayInfo['color'] as Color,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      transaction.currency,
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: colorScheme.onSurfaceVariant,
+                                          ),
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
                           ],
                         ),
