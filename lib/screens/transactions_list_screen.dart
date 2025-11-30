@@ -305,8 +305,8 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                               ),
                               child: Icon(
                                 transaction.isExpense
-                                    ? Icons.arrow_upward
-                                    : Icons.arrow_downward,
+                                    ? Icons.arrow_downward
+                                    : Icons.arrow_upward,
                                 color: transaction.isExpense ? Colors.red : Colors.green,
                               ),
                             ),
@@ -335,7 +335,9 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  '${transaction.isExpense ? '-' : '+'}${transaction.amount}',
+                                  transaction.isExpense
+                                    ? '-${transaction.amount.replaceFirst('-', '')}'
+                                    : transaction.amount.replaceFirst('-', ''),
                                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                         fontWeight: FontWeight.bold,
                                         color: transaction.isExpense ? Colors.red : Colors.green,
