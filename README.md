@@ -39,7 +39,15 @@ Follow the official Flutter installation guide: https://docs.flutter.dev/get-sta
 flutter pub get
 ```
 
-### 3. Configure API Endpoint
+### 3. Generate App Icons
+
+```bash
+flutter pub run flutter_launcher_icons
+```
+
+This step generates the app icons for all platforms based on the source icon in `assets/icon/app_icon.png`. This is required before building the app locally.
+
+### 4. Configure API Endpoint
 
 Edit `lib/services/api_config.dart` to point to your Sure Finance server:
 
@@ -54,7 +62,7 @@ static String _baseUrl = 'http://localhost:3000';
 static String _baseUrl = 'https://your-sure-server.com';
 ```
 
-### 4. Run the App
+### 5. Run the App
 
 ```bash
 # For Android
