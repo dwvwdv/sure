@@ -14,7 +14,7 @@ For more detailed technical documentation, see [docs/TECHNICAL_GUIDE.md](docs/TE
 ## Features
 
 - 🔐 Secure authentication with OAuth 2.0
-- 📱 Cross-platform support (Android & iOS)
+- 📱 Cross-platform support (Android, iOS & Web)
 - 💰 View all linked accounts
 - 🎨 Material Design 3 with light/dark theme support
 - 🔄 Token refresh for persistent sessions
@@ -76,9 +76,11 @@ flutter run -d android
 # For iOS
 flutter run -d ios
 
-# For web (development only)
+# For web
 flutter run -d chrome
 ```
+
+**Note for Web Platform:** If you encounter CORS errors when running the web version, you need to configure CORS on your Sure backend server. See [docs/WEB_CORS_SETUP.md](docs/WEB_CORS_SETUP.md) for detailed instructions.
 
 ## Project Structure
 

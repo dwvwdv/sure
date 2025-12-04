@@ -1,0 +1,6 @@
+# Flutter web build output
+flutter_service_worker.js
+flutter.js
+main.dart.js
+main.dart.js.map
+version.json
