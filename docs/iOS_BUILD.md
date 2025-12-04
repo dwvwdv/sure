@@ -1,155 +1,155 @@
-# iOS 編譯指南
+# iOS Build Guide
 
-## 問題診斷：module 'flutter_secure_storage' not found
+## Issue Diagnosis: module 'flutter_secure_storage' not found
 
-### 根本原因
-此錯誤發生是因為 CocoaPods 依賴尚未安裝。`flutter_secure_storage` 是一個需要原生平台支持的 Flutter 插件，它的 iOS 原生代碼必須通過 CocoaPods 進行安裝。
+### Root Cause
+This error occurs because CocoaPods dependencies have not been installed. `flutter_secure_storage` is a Flutter plugin that requires native platform support, and its iOS native code must be installed via CocoaPods.
 
-### 解決方案
+### Solution
 
-#### 首次設置或依賴更新後
+#### First-time Setup or After Dependency Updates
 ```bash
-# 1. 獲取 Flutter 依賴
+# 1. Get Flutter dependencies
 flutter pub get
 
-# 2. 進入 iOS 目錄並安裝 CocoaPods 依賴
+# 2. Navigate to iOS directory and install CocoaPods dependencies
 cd ios
 pod install
 cd ..
 ```
 
-#### 清理構建（如果遇到問題）
+#### Clean Build (if encountering issues)
 ```bash
-# 清理 Flutter 構建緩存
+# Clean Flutter build cache
 flutter clean
 
-# 重新獲取依賴
+# Re-fetch dependencies
 flutter pub get
 
-# 清理並重新安裝 Pods
+# Clean and reinstall Pods
 cd ios
 rm -rf Pods Podfile.lock
 pod install
 cd ..
 ```
 
-## 本地編譯
+## Local Building
 
-### 方法 1: 使用 Flutter CLI
+### Method 1: Using Flutter CLI
 ```bash
-# Debug 模式
+# Debug mode
 flutter build ios --debug
 
-# Release 模式（需要 Apple 開發者證書）
+# Release mode (requires Apple Developer certificate)
 flutter build ios --release
 
-# Release 模式（無代碼簽名，僅用於測試構建）
+# Release mode (no code signing, for build testing only)
 flutter build ios --release --no-codesign
 ```
 
-### 方法 2: 使用 Xcode
-1. 確保已運行 `pod install`
-2. 打開 `ios/Runner.xcworkspace`（**注意：不是 .xcodeproj**）
-3. 選擇目標設備或模擬器
-4. 點擊 Run 按鈕或按 Cmd+R
+### Method 2: Using Xcode
+1. Ensure you have run `pod install`
+2. Open `ios/Runner.xcworkspace` (**Note: NOT .xcodeproj**)
+3. Select target device or simulator
+4. Click Run button or press Cmd+R
 
-## CI/CD 自動構建
+## CI/CD Automated Builds
 
-### GitHub Actions 工作流程
+### GitHub Actions Workflow
 
-項目已配置自動 iOS 構建流程，觸發條件：
-- Push 到 `main` 分支
-- Pull Request
-- 手動觸發 (workflow_dispatch)
+The project is configured with automated iOS build process, triggered by:
+- Push to `main` branch
+- Pull Requests
+- Manual trigger (workflow_dispatch)
 
-#### 構建步驟
-1. **環境設置**：macOS runner + Flutter 3.32.4
-2. **依賴安裝**：`flutter pub get` + `pod install`
-3. **代碼檢查**：`flutter analyze`
-4. **測試運行**：`flutter test`
-5. **iOS 構建**：`flutter build ios --release --no-codesign`
-6. **產物上傳**：構建的 .app 文件作為 artifact 保存 30 天
+#### Build Steps
+1. **Environment Setup**: macOS runner + Flutter 3.32.4
+2. **Dependency Installation**: `flutter pub get` + `pod install`
+3. **Code Analysis**: `flutter analyze`
+4. **Test Execution**: `flutter test`
+5. **iOS Build**: `flutter build ios --release --no-codesign`
+6. **Artifact Upload**: Built .app file saved as artifact for 30 days
 
-#### 查看構建產物
-1. 前往 GitHub Actions 頁面
-2. 選擇對應的 workflow run
-3. 下載 `ios-build-unsigned` artifact
+#### Viewing Build Artifacts
+1. Go to GitHub Actions page
+2. Select the corresponding workflow run
+3. Download `ios-build-unsigned` artifact
 
-**注意**：CI 構建的版本未經代碼簽名，無法直接安裝到真實設備上。
+**Note**: CI-built versions are not code-signed and cannot be installed directly on physical devices.
 
-## 代碼簽名和發布
+## Code Signing and Distribution
 
-### 配置代碼簽名
-要發布到 App Store 或安裝到真實設備，需要：
+### Configuring Code Signing
+To publish to the App Store or install on physical devices, you need:
 
-1. **Apple 開發者帳號**（個人或企業）
-2. **開發者證書**
-   - 開發證書（Development）
-   - 發布證書（Distribution）
+1. **Apple Developer Account** (Individual or Enterprise)
+2. **Developer Certificates**
+   - Development Certificate
+   - Distribution Certificate
 3. **Provisioning Profile**
-4. **App ID** 在 Apple Developer Portal 註冊
+4. **App ID** registered in Apple Developer Portal
 
-### 在 Xcode 中配置
-1. 打開 `ios/Runner.xcworkspace`
-2. 選擇 Runner target
-3. 前往 "Signing & Capabilities" 標籤
-4. 設置 Team（需要登錄 Apple ID）
-5. 設置 Bundle Identifier
-6. Xcode 會自動管理證書和 Provisioning Profile
+### Configuration in Xcode
+1. Open `ios/Runner.xcworkspace`
+2. Select Runner target
+3. Go to "Signing & Capabilities" tab
+4. Set Team (requires Apple ID login)
+5. Set Bundle Identifier
+6. Xcode will automatically manage certificates and Provisioning Profile
 
-### 構建用於發布的 IPA
+### Building IPA for Distribution
 ```bash
-# 使用 Xcode 構建並存檔
+# Build and archive using Xcode
 flutter build ipa --release
 
-# IPA 文件位置
+# IPA file location
 # build/ios/ipa/*.ipa
 ```
 
-## 系統要求
+## System Requirements
 
-### 開發環境
-- macOS 12.0 或更高版本
-- Xcode 14.0 或更高版本
-- CocoaPods 1.11 或更高版本
-- Flutter 3.32.4（推薦）
+### Development Environment
+- macOS 12.0 or higher
+- Xcode 14.0 or higher
+- CocoaPods 1.11 or higher
+- Flutter 3.32.4 (recommended)
 
-### iOS 最低版本
-- iOS 12.0（在 `ios/Podfile` 中定義）
+### Minimum iOS Version
+- iOS 12.0 (defined in `ios/Podfile`)
 
-## 常見問題
+## Common Issues
 
-### Q: 為什麼要用 .xcworkspace 而不是 .xcodeproj？
-A: 當項目使用 CocoaPods 時，Pod 依賴會被組織到一個單獨的 Xcode project 中。`.xcworkspace` 文件包含了主項目和 Pods 項目，必須使用它來確保所有依賴都被正確加載。
+### Q: Why use .xcworkspace instead of .xcodeproj?
+A: When a project uses CocoaPods, Pod dependencies are organized into a separate Xcode project. The `.xcworkspace` file contains both the main project and the Pods project, and must be used to ensure all dependencies are properly loaded.
 
-### Q: 更新 pubspec.yaml 後需要做什麼？
-A: 每次添加或更新依賴後，需要運行：
+### Q: What to do after updating pubspec.yaml?
+A: After adding or updating dependencies, you need to run:
 ```bash
 flutter pub get
 cd ios && pod install && cd ..
 ```
 
-### Q: CI 構建失敗怎麼辦？
-A: 常見原因：
-1. Flutter 版本不匹配
-2. 依賴衝突
-3. Pod 安裝失敗
-4. 代碼分析或測試失敗
+### Q: What if CI build fails?
+A: Common causes:
+1. Flutter version mismatch
+2. Dependency conflicts
+3. Pod installation failure
+4. Code analysis or test failures
 
-檢查 GitHub Actions 日誌獲取詳細錯誤信息。
+Check GitHub Actions logs for detailed error information.
 
-### Q: 如何在 CI 中進行代碼簽名？
-A: 需要配置 GitHub Secrets：
-- Apple 證書（.p12 格式，base64 編碼）
+### Q: How to configure code signing in CI?
+A: You need to configure GitHub Secrets:
+- Apple certificate (.p12 format, base64 encoded)
 - Provisioning Profile
-- 證書密碼
-- Keychain 設置
+- Certificate password
+- Keychain setup
 
-這需要額外的配置步驟，目前 CI 使用 `--no-codesign` 選項進行無簽名構建。
+This requires additional configuration steps. Currently, CI uses the `--no-codesign` option for unsigned builds.
 
-## 相關文檔
+## Related Documentation
 
-- [Flutter iOS 部署文檔](https://docs.flutter.dev/deployment/ios)
-- [CocoaPods 官方指南](https://guides.cocoapods.org/)
-- [Apple 開發者文檔](https://developer.apple.com/documentation/)
-- [flutter_secure_storage 插件文檔](https://pub.dev/packages/flutter_secure_storage)
+- [Flutter iOS Deployment Documentation](https://docs.flutter.dev/deployment/ios)
+- [CocoaPods Official Guide](https://guides.cocoapods.org/)
+- [Apple Developer Documentation](https://developer.apple.com/documentation/)
+- [flutter_secure_storage Plugin Documentation](https://pub.dev/packages/flutter_secure_storage)

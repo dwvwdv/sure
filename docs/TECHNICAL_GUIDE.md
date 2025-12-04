@@ -1,457 +1,457 @@
-# Sure Mobile - 移动端应用技术文档
+# Sure Mobile - Technical Documentation
 
-## 项目简介
+## Project Overview
 
-Sure Mobile 是 [Sure 个人财务管理系统](https://github.com/we-promise/sure) 的移动端应用，基于 Flutter 框架开发，支持 Android 和 iOS 平台。本应用提供了 Sure 财务管理系统的核心移动功能，允许用户随时随地查看和管理自己的财务账户。
+Sure Mobile is the mobile application for the [Sure Personal Finance Management System](https://github.com/we-promise/sure), developed with Flutter framework and supporting both Android and iOS platforms. This application provides core mobile functionality for the Sure finance management system, allowing users to view and manage their financial accounts anytime, anywhere.
 
-### 与后端的关系
+### Backend Relationship
 
-本应用是 Sure 财务管理系统的客户端应用，需要连接到 Sure 后端服务器（Rails API）才能正常使用。后端项目地址：https://github.com/we-promise/sure
+This application is a client app for the Sure Finance Management System and requires connection to the Sure backend server (Rails API) to function properly. Backend project: https://github.com/we-promise/sure
 
-## 核心功能
+## Core Features
 
-### 1. 后端配置
-- **配置服务器地址**：首次启动时需要配置 Sure 后端服务器的 URL
-- **连接测试**：提供连接测试功能，验证服务器是否可用
-- **地址持久化**：服务器地址保存在本地，下次启动自动加载
+### 1. Backend Configuration
+- **Server Address Configuration**: Configure Sure backend server URL on first launch
+- **Connection Testing**: Provides connection test functionality to verify server availability
+- **Address Persistence**: Server address is saved locally and automatically loaded on next startup
 
-### 2. 用户认证
-- **登录功能**：支持邮箱和密码登录
-- **双因素认证（MFA）**：支持 OTP 验证码二次验证
-- **用户注册**：支持新用户注册（后端支持）
-- **Token 管理**：
-  - Access Token 用于 API 请求认证
-  - Refresh Token 用于刷新过期的 Access Token
-  - Token 安全存储在设备的安全存储空间
-- **自动登录**：应用启动时自动检查本地 Token，如果有效则自动登录
-- **设备信息追踪**：登录时记录设备信息，方便后端管理用户会话
+### 2. User Authentication
+- **Login**: Support email and password login
+- **Two-Factor Authentication (MFA)**: Support OTP verification code secondary verification
+- **User Registration**: Support new user registration (backend supported)
+- **Token Management**:
+  - Access Token for API request authentication
+  - Refresh Token for refreshing expired Access Tokens
+  - Tokens securely stored in device's secure storage
+- **Auto-login**: Automatically checks local tokens on app startup and logs in if valid
+- **Device Information Tracking**: Records device information on login for backend session management
 
-### 3. 账户管理
-- **账户列表展示**：显示用户的所有财务账户
-- **账户分类**：
-  - **资产账户（Assets）**：银行账户、投资账户、加密货币、房产、车辆等
-  - **负债账户（Liabilities）**：信用卡、贷款等
-  - **其他账户**：未分类的账户
-- **账户类型支持**：
-  - 存款账户（Depository）
-  - 信用卡（Credit Card）
-  - 投资账户（Investment）
-  - 贷款（Loan）
-  - 房产（Property）
-  - 车辆（Vehicle）
-  - 加密货币（Crypto）
-  - 其他资产/负债
-- **余额显示**：显示每个账户的当前余额和货币类型
-- **下拉刷新**：支持下拉刷新账户数据
+### 3. Account Management
+- **Account List Display**: Shows all user financial accounts
+- **Account Classification**:
+  - **Asset Accounts**: Bank accounts, investment accounts, cryptocurrency, real estate, vehicles, etc.
+  - **Liability Accounts**: Credit cards, loans, etc.
+  - **Other Accounts**: Uncategorized accounts
+- **Account Type Support**:
+  - Depository
+  - Credit Card
+  - Investment
+  - Loan
+  - Property
+  - Vehicle
+  - Crypto
+  - Other assets/liabilities
+- **Balance Display**: Shows current balance and currency type for each account
+- **Pull to Refresh**: Supports pull-to-refresh for account data
 
-## 技术架构
+## Technical Architecture
 
-### 技术栈
-- **框架**：Flutter 3.0+
-- **语言**：Dart 3.0+
-- **状态管理**：Provider
-- **网络请求**：http
-- **本地存储**：
-  - shared_preferences（非敏感数据，如服务器 URL）
-  - flutter_secure_storage（敏感数据，如 Token）
+### Tech Stack
+- **Framework**: Flutter 3.0+
+- **Language**: Dart 3.0+
+- **State Management**: Provider
+- **Network Requests**: http
+- **Local Storage**:
+  - shared_preferences (non-sensitive data, like server URL)
+  - flutter_secure_storage (sensitive data, like tokens)
 
-### 项目结构
+### Project Structure
 
 ```
 lib/
-├── main.dart                      # 应用入口
-├── models/                        # 数据模型
-│   ├── account.dart              # 账户模型
-│   ├── auth_tokens.dart          # 认证 Token 模型
-│   └── user.dart                 # 用户模型
-├── providers/                     # 状态管理
-│   ├── auth_provider.dart        # 认证状态管理
-│   └── accounts_provider.dart    # 账户状态管理
-├── screens/                       # 页面
-│   ├── backend_config_screen.dart # 后端配置页面
-│   ├── login_screen.dart         # 登录页面
-│   └── dashboard_screen.dart     # 主页面（账户列表）
-├── services/                      # 业务服务
-│   ├── api_config.dart           # API 配置
-│   ├── auth_service.dart         # 认证服务
-│   ├── accounts_service.dart     # 账户服务
-│   └── device_service.dart       # 设备信息服务
-└── widgets/                       # 可复用组件
-    └── account_card.dart         # 账户卡片组件
+├── main.dart                      # App entry point
+├── models/                        # Data models
+│   ├── account.dart              # Account model
+│   ├── auth_tokens.dart          # Authentication token model
+│   └── user.dart                 # User model
+├── providers/                     # State management
+│   ├── auth_provider.dart        # Authentication state management
+│   └── accounts_provider.dart    # Accounts state management
+├── screens/                       # Screens
+│   ├── backend_config_screen.dart # Backend configuration screen
+│   ├── login_screen.dart         # Login screen
+│   └── dashboard_screen.dart     # Main screen (account list)
+├── services/                      # Business services
+│   ├── api_config.dart           # API configuration
+│   ├── auth_service.dart         # Authentication service
+│   ├── accounts_service.dart     # Accounts service
+│   └── device_service.dart       # Device information service
+└── widgets/                       # Reusable widgets
+    └── account_card.dart         # Account card widget
 ```
 
-## 应用流程详解
+## Application Flow Details
 
-### 启动流程
+### Startup Flow
 
 ```
-应用启动
+App Launch
     ↓
-初始化 ApiConfig（加载保存的后端 URL）
+Initialize ApiConfig (load saved backend URL)
     ↓
-检查是否配置后端 URL
-    ├─ 否 → 显示后端配置页面
+Check if backend URL is configured
+    ├─ No → Show backend configuration screen
     │         ↓
-    │       输入并测试 URL
+    │       Enter and test URL
     │         ↓
-    │       保存配置
+    │       Save configuration
     │         ↓
-    └─ 是 → 检查 Token
-            ├─ 无效或不存在 → 显示登录页面
-            │                    ↓
-            │                  用户登录
-            │                    ↓
-            │                  保存 Token 和用户信息
-            │                    ↓
-            └─ 有效 → 进入主页面（Dashboard）
+    └─ Yes → Check Token
+            ├─ Invalid or not exists → Show login screen
+            │                           ↓
+            │                         User login
+            │                           ↓
+            │                         Save tokens and user info
+            │                           ↓
+            └─ Valid → Enter Dashboard
 ```
 
-### 认证流程
+### Authentication Flow
 
-#### 1. 登录流程（login_screen.dart）
+#### 1. Login Flow (login_screen.dart)
 
 ```
-用户输入邮箱和密码
+User enters email and password
     ↓
-点击登录按钮
+Click login button
     ↓
 AuthProvider.login()
     ↓
-收集设备信息（DeviceService）
+Collect device information (DeviceService)
     ↓
-调用 AuthService.login()
+Call AuthService.login()
     ↓
-发送 POST /api/v1/auth/login
-    ├─ 成功（200）
+Send POST /api/v1/auth/login
+    ├─ Success (200)
     │   ↓
-    │  保存 Access Token 和 Refresh Token
+    │  Save Access Token and Refresh Token
     │   ↓
-    │  保存用户信息
+    │  Save user information
     │   ↓
-    │  跳转到主页面
+    │  Navigate to dashboard
     │
-    ├─ MFA 要求（401 + mfa_required）
+    ├─ MFA Required (401 + mfa_required)
     │   ↓
-    │  显示 OTP 输入框
+    │  Show OTP input field
     │   ↓
-    │  用户输入验证码
+    │  User enters verification code
     │   ↓
-    │  重新登录（带 OTP）
+    │  Re-login (with OTP)
     │
-    └─ 失败
+    └─ Failure
         ↓
-       显示错误信息
+       Show error message
 ```
 
-#### 2. Token 刷新流程（auth_provider.dart）
+#### 2. Token Refresh Flow (auth_provider.dart)
 
 ```
-需要访问 API
+Need to access API
     ↓
-检查 Access Token 是否过期
-    ├─ 未过期 → 直接使用
+Check if Access Token is expired
+    ├─ Not expired → Use directly
     │
-    └─ 已过期
+    └─ Expired
         ↓
-       获取 Refresh Token
+       Get Refresh Token
         ↓
-       调用 AuthService.refreshToken()
+       Call AuthService.refreshToken()
         ↓
-       发送 POST /api/v1/auth/refresh
-        ├─ 成功
+       Send POST /api/v1/auth/refresh
+        ├─ Success
         │   ↓
-        │  保存新的 Token
+        │  Save new tokens
         │   ↓
-        │  返回新的 Access Token
+        │  Return new Access Token
         │
-        └─ 失败
+        └─ Failure
             ↓
-           清除 Token
+           Clear tokens
             ↓
-           返回登录页面
+           Return to login screen
 ```
 
-### 账户数据流程
+### Account Data Flow
 
-#### 1. 获取账户列表（dashboard_screen.dart）
+#### 1. Fetch Account List (dashboard_screen.dart)
 
 ```
-进入主页面
+Enter dashboard
     ↓
 _loadAccounts()
     ↓
-从 AuthProvider 获取有效的 Access Token
-    ├─ Token 无效
+Get valid Access Token from AuthProvider
+    ├─ Token invalid
     │   ↓
-    │  登出并返回登录页面
+    │  Logout and return to login screen
     │
-    └─ Token 有效
+    └─ Token valid
         ↓
        AccountsProvider.fetchAccounts()
         ↓
-       调用 AccountsService.getAccounts()
+       Call AccountsService.getAccounts()
         ↓
-       发送 GET /api/v1/accounts
-        ├─ 成功（200）
+       Send GET /api/v1/accounts
+        ├─ Success (200)
         │   ↓
-        │  解析账户数据
+        │  Parse account data
         │   ↓
-        │  按分类（资产/负债）分组
+        │  Group by classification (asset/liability)
         │   ↓
-        │  更新 UI 显示
+        │  Update UI
         │
-        ├─ 未授权（401）
+        ├─ Unauthorized (401)
         │   ↓
-        │  清除本地数据
+        │  Clear local data
         │   ↓
-        │  返回登录页面
+        │  Return to login screen
         │
-        └─ 其他错误
+        └─ Other errors
             ↓
-           显示错误信息
+           Show error message
 ```
 
-#### 2. 账户分类逻辑（accounts_provider.dart）
+#### 2. Account Classification Logic (accounts_provider.dart)
 
 ```dart
-// 资产账户：classification == 'asset'
+// Asset accounts: classification == 'asset'
 List<Account> get assetAccounts =>
     accounts.where((a) => a.isAsset).toList();
 
-// 负债账户：classification == 'liability'
+// Liability accounts: classification == 'liability'
 List<Account> get liabilityAccounts =>
     accounts.where((a) => a.isLiability).toList();
 
-// 未分类账户
+// Uncategorized accounts
 List<Account> get uncategorizedAccounts =>
     accounts.where((a) => !a.isAsset && !a.isLiability).toList();
 ```
 
-### UI 状态管理
+### UI State Management
 
-应用使用 Provider 进行状态管理，主要有两个 Provider：
+The app uses Provider for state management, with two main providers:
 
-#### AuthProvider（auth_provider.dart）
-负责管理认证相关状态：
-- `isAuthenticated`: 是否已登录
-- `isLoading`: 是否正在加载
-- `user`: 当前用户信息
-- `errorMessage`: 错误信息
-- `mfaRequired`: 是否需要 MFA 验证
+#### AuthProvider (auth_provider.dart)
+Manages authentication-related state:
+- `isAuthenticated`: Whether user is logged in
+- `isLoading`: Whether loading is in progress
+- `user`: Current user information
+- `errorMessage`: Error message
+- `mfaRequired`: Whether MFA verification is required
 
-#### AccountsProvider（accounts_provider.dart）
-负责管理账户数据状态：
-- `accounts`: 所有账户列表
-- `isLoading`: 是否正在加载
-- `errorMessage`: 错误信息
-- `assetAccounts`: 资产账户列表
-- `liabilityAccounts`: 负债账户列表
+#### AccountsProvider (accounts_provider.dart)
+Manages account data state:
+- `accounts`: All accounts list
+- `isLoading`: Whether loading is in progress
+- `errorMessage`: Error message
+- `assetAccounts`: Asset accounts list
+- `liabilityAccounts`: Liability accounts list
 
-## API 接口
+## API Endpoints
 
-应用与后端通过以下 API 端点交互：
+The app interacts with the backend through the following API endpoints:
 
-### 认证相关
-- `POST /api/v1/auth/login` - 用户登录
-- `POST /api/v1/auth/signup` - 用户注册
-- `POST /api/v1/auth/refresh` - 刷新 Token
+### Authentication
+- `POST /api/v1/auth/login` - User login
+- `POST /api/v1/auth/signup` - User registration
+- `POST /api/v1/auth/refresh` - Refresh token
 
-### 账户相关
-- `GET /api/v1/accounts` - 获取账户列表（支持分页）
+### Accounts
+- `GET /api/v1/accounts` - Get account list (supports pagination)
 
-### 健康检查
-- `GET /sessions/new` - 验证后端服务可用性
+### Health Check
+- `GET /sessions/new` - Verify backend service availability
 
-## 数据模型
+## Data Models
 
-### Account（账户模型）
+### Account Model
 ```dart
 class Account {
-  final String id;              // 账户 ID（UUID）
-  final String name;            // 账户名称
-  final String balance;         // 余额（字符串格式）
-  final String currency;        // 货币类型（如 USD, TWD）
-  final String? classification; // 分类（asset/liability）
-  final String accountType;     // 账户类型（depository, credit_card 等）
+  final String id;              // Account ID (UUID)
+  final String name;            // Account name
+  final String balance;         // Balance (string format)
+  final String currency;        // Currency type (e.g., USD, TWD)
+  final String? classification; // Classification (asset/liability)
+  final String accountType;     // Account type (depository, credit_card, etc.)
 }
 ```
 
-### AuthTokens（认证 Token）
+### AuthTokens Model
 ```dart
 class AuthTokens {
-  final String accessToken;     // 访问令牌
-  final String refreshToken;    // 刷新令牌
-  final int expiresIn;          // 过期时间（秒）
-  final DateTime expiresAt;     // 过期时间戳
+  final String accessToken;     // Access token
+  final String refreshToken;    // Refresh token
+  final int expiresIn;          // Expiration time (seconds)
+  final DateTime expiresAt;     // Expiration timestamp
 }
 ```
 
-### User（用户模型）
+### User Model
 ```dart
 class User {
-  final String id;              // 用户 ID（UUID）
-  final String email;           // 邮箱
-  final String firstName;       // 名字
-  final String lastName;        // 姓氏
+  final String id;              // User ID (UUID)
+  final String email;           // Email
+  final String firstName;       // First name
+  final String lastName;        // Last name
 }
 ```
 
-## 安全机制
+## Security Mechanisms
 
-### 1. Token 安全存储
-- 使用 `flutter_secure_storage` 加密存储 Token
-- Token 不会以明文形式保存在普通存储中
-- 应用卸载时自动清除敏感数据
+### 1. Secure Token Storage
+- Uses `flutter_secure_storage` for encrypted token storage
+- Tokens are never saved in plain text in regular storage
+- Sensitive data is automatically cleared when app is uninstalled
 
-### 2. Token 过期处理
-- Access Token 过期后自动使用 Refresh Token 刷新
-- Refresh Token 失效时要求重新登录
-- 所有 API 请求都会检查 Token 有效性
+### 2. Token Expiration Handling
+- Access Token is automatically refreshed using Refresh Token after expiration
+- Requires re-login when Refresh Token is invalid
+- All API requests check token validity
 
-### 3. 设备追踪
-- 每次登录记录设备信息（设备 ID、型号、操作系统）
-- 后端可以基于设备信息管理用户会话
+### 3. Device Tracking
+- Records device information on each login (device ID, model, OS)
+- Backend can manage user sessions based on device information
 
-### 4. HTTPS 支持
-- 生产环境强制使用 HTTPS
-- 开发环境支持 HTTP（仅用于本地测试）
+### 4. HTTPS Support
+- Production environment enforces HTTPS
+- Development environment supports HTTP (local testing only)
 
-## 主题与 UI
+## Theme & UI
 
 ### Material Design 3
-应用采用 Material Design 3 设计规范：
-- 动态颜色方案（基于种子颜色 #6366F1）
-- 圆角卡片（12px 圆角）
-- 自适应布局
-- 深色模式支持（跟随系统）
+The app follows Material Design 3 specifications:
+- Dynamic color scheme (based on seed color #6366F1)
+- Rounded cards (12px border radius)
+- Responsive layout
+- Dark mode support (follows system)
 
-### 响应式设计
-- 支持下拉刷新
-- 加载状态指示器
-- 错误状态展示
-- 空状态提示
+### Responsive Design
+- Pull-to-refresh support
+- Loading state indicators
+- Error state display
+- Empty state prompts
 
-## 开发与调试
+## Development & Debugging
 
-### 环境配置
+### Environment Configuration
 
-#### Android 模拟器
+#### Android Emulator
 ```dart
 // lib/services/api_config.dart
 static String _baseUrl = 'http://10.0.2.2:3000';
 ```
 
-#### iOS 模拟器
+#### iOS Simulator
 ```dart
 static String _baseUrl = 'http://localhost:3000';
 ```
 
-#### 真实设备
+#### Physical Device
 ```dart
 static String _baseUrl = 'http://YOUR_COMPUTER_IP:3000';
-// 或使用生产环境 URL
+// Or use production URL
 static String _baseUrl = 'https://your-domain.com';
 ```
 
-### 常用命令
+### Common Commands
 
 ```bash
-# 安装依赖
+# Install dependencies
 flutter pub get
 
-# 运行应用
+# Run app
 flutter run
 
-# 构建 APK
+# Build APK
 flutter build apk --release
 
-# 构建 App Bundle
+# Build App Bundle
 flutter build appbundle --release
 
-# 构建 iOS
+# Build iOS
 flutter build ios --release
 
-# 代码分析
+# Code analysis
 flutter analyze
 
-# 运行测试
+# Run tests
 flutter test
 ```
 
-### 调试技巧
+### Debugging Tips
 
-1. **查看网络请求**：
-   - Android Studio: 使用 Network Profiler
-   - 或在代码中添加 `print()` 语句
+1. **View Network Requests**:
+   - Android Studio: Use Network Profiler
+   - Or add `print()` statements in code
 
-2. **查看存储数据**：
+2. **View Stored Data**:
    ```dart
-   // 在需要调试的地方添加
+   // Add at debugging point
    final prefs = await SharedPreferences.getInstance();
    print('Backend URL: ${prefs.getString('backend_url')}');
    ```
 
-3. **清除本地数据**：
+3. **Clear Local Data**:
    ```bash
    # Android
    adb shell pm clear com.example.sure_mobile
 
-   # iOS 模拟器
-   # 长按应用图标 -> 删除应用 -> 重新安装
+   # iOS Simulator
+   # Long press app icon -> Delete app -> Reinstall
    ```
 
 ## CI/CD
 
-项目配置了 GitHub Actions 自动构建：
+The project is configured with GitHub Actions automated builds:
 
-### 触发条件
-- Push 到 `main` 分支
-- 创建 Pull Request 到 `main` 分支
-- 仅当 Flutter 相关文件变更时触发
+### Trigger Conditions
+- Push to `main` branch
+- Pull Request to `main` branch
+- Only triggers when Flutter-related files change
 
-### 构建流程
-1. 代码检查（`flutter analyze`）
-2. 运行测试（`flutter test`）
-3. Android Release 构建（APK + AAB）
-4. iOS Release 构建（未签名）
-5. 上传构建产物
+### Build Process
+1. Code analysis (`flutter analyze`)
+2. Run tests (`flutter test`)
+3. Android Release build (APK + AAB)
+4. iOS Release build (unsigned)
+5. Upload build artifacts
 
-### 下载构建产物
-在 GitHub Actions 页面可以下载：
-- `app-release-apk`：Android APK 文件
-- `app-release-aab`：Android App Bundle（用于 Google Play）
-- `ios-release`：iOS 应用包（需要签名才能分发）
+### Download Build Artifacts
+Available on GitHub Actions page:
+- `app-release-apk`: Android APK file
+- `app-release-aab`: Android App Bundle (for Google Play)
+- `ios-build-unsigned`: iOS app bundle (requires signing for distribution)
 
-## 未来扩展功能
+## Future Extensions
 
-### 计划中的功能
-- **交易记录**：查看和管理交易历史
-- **账户同步**：支持银行账户自动同步
-- **预算管理**：设置和追踪预算
-- **投资追踪**：查看投资收益
-- **AI 助手**：财务建议和分析
-- **推送通知**：交易提醒和账户变动通知
-- **生物识别**：指纹/Face ID 快速登录
-- **多语言支持**：中文、英文界面切换
-- **图表分析**：财务数据可视化
+### Planned Features
+- **Transaction History**: View and manage transaction history
+- **Account Sync**: Support automatic bank account synchronization
+- **Budget Management**: Set and track budgets
+- **Investment Tracking**: View investment returns
+- **AI Assistant**: Financial advice and analysis
+- **Push Notifications**: Transaction alerts and account change notifications
+- **Biometric Authentication**: Fingerprint/Face ID quick login
+- **Multi-language Support**: Chinese/English interface switching
+- **Chart Analysis**: Financial data visualization
 
-### 技术改进
-- 离线模式支持
-- 数据缓存优化
-- 更完善的错误处理
-- 单元测试和集成测试
-- 性能优化
+### Technical Improvements
+- Offline mode support
+- Data caching optimization
+- More robust error handling
+- Unit tests and integration tests
+- Performance optimization
 
-## 许可证
+## License
 
-本项目采用 AGPLv3 许可证分发。
+This project is distributed under the AGPLv3 license.
 
-## 贡献
+## Contributing
 
-欢迎提交 Issue 和 Pull Request！
+Issues and Pull Requests are welcome!
 
-## 相关链接
+## Related Links
 
-- **后端项目**：https://github.com/we-promise/sure
-- **Flutter 官方文档**：https://docs.flutter.dev
-- **Dart 语言文档**：https://dart.dev/guides
+- **Backend Project**: https://github.com/we-promise/sure
+- **Flutter Official Documentation**: https://docs.flutter.dev
+- **Dart Language Documentation**: https://dart.dev/guides
