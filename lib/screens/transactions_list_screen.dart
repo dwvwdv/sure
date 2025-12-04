@@ -210,7 +210,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                   Icon(
                     Icons.receipt_long_outlined,
                     size: 64,
-                    color: colorScheme.onSurfaceVariant.withOpacity(0.5),
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -225,7 +225,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                     'Tap + to add your first transaction',
                     style: TextStyle(
                       fontSize: 14,
-                      color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+                      color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -280,6 +280,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                   },
                   onDismissed: (direction) async {
                     if (transaction.id != null) {
+                      final scaffoldMessenger = ScaffoldMessenger.of(context);
                       final authProvider = Provider.of<AuthProvider>(context, listen: false);
                       final accessToken = await authProvider.getValidAccessToken();
                       if (accessToken != null) {
@@ -289,7 +290,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                         );
 
                         if (mounted && success) {
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          scaffoldMessenger.showSnackBar(
                             const SnackBar(
                               content: Text('Transaction deleted'),
                               backgroundColor: Colors.green,
@@ -330,7 +331,7 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                                   width: 48,
                                   height: 48,
                                   decoration: BoxDecoration(
-                                    color: (displayInfo['color'] as Color).withOpacity(0.1),
+                                    color: (displayInfo['color'] as Color).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Icon(
