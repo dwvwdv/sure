@@ -80,7 +80,9 @@ flutter run -d ios
 flutter run -d chrome
 ```
 
-**Note for Web Platform:** If you encounter CORS errors when running the web version, you need to configure CORS on your Sure backend server. See [docs/WEB_CORS_SETUP.md](docs/WEB_CORS_SETUP.md) for detailed instructions.
+**Note for Web Platform:** If you encounter CORS errors when running the web version, you need to configure CORS on your Sure backend server:
+- **Local development backend**: See [docs/WEB_CORS_SETUP.md](docs/WEB_CORS_SETUP.md)
+- **Production backend (e.g., https://sure.lazyrhythm.com)**: See [docs/PRODUCTION_CORS_CONFIG.md](docs/PRODUCTION_CORS_CONFIG.md)
 
 ## Project Structure
 
