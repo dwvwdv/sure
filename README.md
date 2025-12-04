@@ -37,6 +37,11 @@ Follow the official Flutter installation guide: https://docs.flutter.dev/get-sta
 
 ```bash
 flutter pub get
+
+# For iOS development, also install CocoaPods dependencies
+cd ios
+pod install
+cd ..
 ```
 
 ### 3. Generate App Icons
@@ -150,7 +155,7 @@ The app includes automated CI/CD via GitHub Actions (`.github/workflows/flutter-
 After a successful CI run, download artifacts from the GitHub Actions workflow:
 - `app-release-apk` - Android APK file
 - `app-release-aab` - Android App Bundle (for Play Store)
-- `ios-release` - iOS app bundle (requires code signing for distribution)
+- `ios-build-unsigned` - iOS app bundle (unsigned, see [iOS build guide](docs/iOS_BUILD.md) for signing)
 
 ## Building for Release
 
@@ -165,8 +170,14 @@ flutter build appbundle --release
 ### iOS
 
 ```bash
+# Ensure CocoaPods dependencies are installed first
+cd ios && pod install && cd ..
+
+# Build iOS release
 flutter build ios --release
 ```
+
+For detailed iOS build instructions, troubleshooting, and CI/CD setup, see [docs/iOS_BUILD.md](docs/iOS_BUILD.md).
 
 ## Future Expansion
 

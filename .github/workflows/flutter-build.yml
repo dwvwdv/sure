@@ -89,3 +89,57 @@ jobs:
           name: app-release-aab
           path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
+
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.4'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate app icons
+        run: flutter pub run flutter_launcher_icons
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install
+          cd ..
+
+      - name: Analyze code
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build iOS (No Code Signing)
+        run: |
+          flutter build ios --release --no-codesign
+
+      - name: Create IPA archive info
+        run: |
+          echo "iOS build completed successfully" > build/ios-build-info.txt
+          echo "Build date: $(date)" >> build/ios-build-info.txt
+          echo "Note: This build is not code-signed and cannot be installed on physical devices" >> build/ios-build-info.txt
+          echo "For distribution, you need to configure code signing with Apple certificates" >> build/ios-build-info.txt
+
+      - name: Upload iOS build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-unsigned
+          path: |
+            build/ios/iphoneos/Runner.app
+            build/ios-build-info.txt
+          retention-days: 30
