@@ -1,14 +1,52 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/auth_tokens.dart';
 import '../models/user.dart';
 import 'api_config.dart';
 
 class AuthService {
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  // Use different storage for web platform
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
+    webOptions: WebOptions(
+      dbName: 'SureFinanceDB',
+      publicKey: 'SureFinancePublicKey',
+    ),
+  );
+
   static const String _tokenKey = 'auth_tokens';
   static const String _userKey = 'user_data';
+
+  // Web fallback storage using SharedPreferences
+  Future<void> _writeSecure(String key, String value) async {
+    if (kIsWeb) {
+      // Use SharedPreferences for web as a fallback
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(key, value);
+    } else {
+      await _secureStorage.write(key: key, value: value);
+    }
+  }
+
+  Future<String?> _readSecure(String key) async {
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(key);
+    } else {
+      return await _secureStorage.read(key: key);
+    }
+  }
+
+  Future<void> _deleteSecure(String key) async {
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(key);
+    } else {
+      await _secureStorage.delete(key: key);
+    }
+  }
 
   Future<Map<String, dynamic>> login({
     required String email,
@@ -17,56 +55,68 @@ class AuthService {
     String? otpCode,
   }) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/api/v1/auth/login');
-    
+
     final body = {
       'email': email,
       'password': password,
       'device': deviceInfo,
     };
-    
+
     if (otpCode != null) {
       body['otp_code'] = otpCode;
     }
 
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode(body),
-    );
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(body),
+      ).timeout(
+        ApiConfig.connectTimeout,
+        onTimeout: () {
+          throw Exception('Connection timeout. Please check your backend URL and network connection.');
+        },
+      );
 
-    final responseData = jsonDecode(response.body);
+      final responseData = jsonDecode(response.body);
 
-    if (response.statusCode == 200) {
-      // Store tokens
-      final tokens = AuthTokens.fromJson(responseData);
-      await _saveTokens(tokens);
-      
-      // Store user data
-      if (responseData['user'] != null) {
-        final user = User.fromJson(responseData['user']);
-        await _saveUser(user);
+      if (response.statusCode == 200) {
+        // Store tokens
+        final tokens = AuthTokens.fromJson(responseData);
+        await _saveTokens(tokens);
+
+        // Store user data
+        if (responseData['user'] != null) {
+          final user = User.fromJson(responseData['user']);
+          await _saveUser(user);
+        }
+
+        return {
+          'success': true,
+          'tokens': tokens,
+          'user': responseData['user'] != null
+              ? User.fromJson(responseData['user'])
+              : null,
+        };
+      } else if (response.statusCode == 401 && responseData['mfa_required'] == true) {
+        return {
+          'success': false,
+          'mfa_required': true,
+          'error': responseData['error'],
+        };
+      } else {
+        return {
+          'success': false,
+          'error': responseData['error'] ?? responseData['errors']?.join(', ') ?? 'Login failed',
+        };
       }
-      
-      return {
-        'success': true,
-        'tokens': tokens,
-        'user': responseData['user'] != null 
-            ? User.fromJson(responseData['user']) 
-            : null,
-      };
-    } else if (response.statusCode == 401 && responseData['mfa_required'] == true) {
+    } catch (e) {
       return {
         'success': false,
-        'mfa_required': true,
-        'error': responseData['error'],
-      };
-    } else {
-      return {
-        'success': false,
-        'error': responseData['error'] ?? responseData['errors']?.join(', ') ?? 'Login failed',
+        'error': 'Connection failed: ${e.toString()}',
       };
     }
   }
@@ -80,7 +130,7 @@ class AuthService {
     String? inviteCode,
   }) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/api/v1/auth/signup');
-    
+
     final Map<String, Object> body = {
       'user': {
         'email': email,
@@ -90,44 +140,56 @@ class AuthService {
       },
       'device': deviceInfo,
     };
-    
+
     if (inviteCode != null) {
       body['invite_code'] = inviteCode;
     }
 
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode(body),
-    );
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(body),
+      ).timeout(
+        ApiConfig.connectTimeout,
+        onTimeout: () {
+          throw Exception('Connection timeout. Please check your backend URL and network connection.');
+        },
+      );
 
-    final responseData = jsonDecode(response.body);
+      final responseData = jsonDecode(response.body);
 
-    if (response.statusCode == 201) {
-      // Store tokens
-      final tokens = AuthTokens.fromJson(responseData);
-      await _saveTokens(tokens);
-      
-      // Store user data
-      if (responseData['user'] != null) {
-        final user = User.fromJson(responseData['user']);
-        await _saveUser(user);
+      if (response.statusCode == 201) {
+        // Store tokens
+        final tokens = AuthTokens.fromJson(responseData);
+        await _saveTokens(tokens);
+
+        // Store user data
+        if (responseData['user'] != null) {
+          final user = User.fromJson(responseData['user']);
+          await _saveUser(user);
+        }
+
+        return {
+          'success': true,
+          'tokens': tokens,
+          'user': responseData['user'] != null
+              ? User.fromJson(responseData['user'])
+              : null,
+        };
+      } else {
+        return {
+          'success': false,
+          'error': responseData['error'] ?? responseData['errors']?.join(', ') ?? 'Signup failed',
+        };
       }
-      
-      return {
-        'success': true,
-        'tokens': tokens,
-        'user': responseData['user'] != null 
-            ? User.fromJson(responseData['user']) 
-            : null,
-      };
-    } else {
+    } catch (e) {
       return {
         'success': false,
-        'error': responseData['error'] ?? responseData['errors']?.join(', ') ?? 'Signup failed',
+        'error': 'Connection failed: ${e.toString()}',
       };
     }
   }
@@ -137,46 +199,58 @@ class AuthService {
     required Map<String, String> deviceInfo,
   }) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/api/v1/auth/refresh');
-    
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode({
-        'refresh_token': refreshToken,
-        'device': deviceInfo,
-      }),
-    );
 
-    final responseData = jsonDecode(response.body);
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'refresh_token': refreshToken,
+          'device': deviceInfo,
+        }),
+      ).timeout(
+        ApiConfig.connectTimeout,
+        onTimeout: () {
+          throw Exception('Connection timeout. Please check your backend URL and network connection.');
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final tokens = AuthTokens.fromJson(responseData);
-      await _saveTokens(tokens);
-      
-      return {
-        'success': true,
-        'tokens': tokens,
-      };
-    } else {
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        final tokens = AuthTokens.fromJson(responseData);
+        await _saveTokens(tokens);
+
+        return {
+          'success': true,
+          'tokens': tokens,
+        };
+      } else {
+        return {
+          'success': false,
+          'error': responseData['error'] ?? 'Token refresh failed',
+        };
+      }
+    } catch (e) {
       return {
         'success': false,
-        'error': responseData['error'] ?? 'Token refresh failed',
+        'error': 'Connection failed: ${e.toString()}',
       };
     }
   }
 
   Future<void> logout() async {
-    await _storage.delete(key: _tokenKey);
-    await _storage.delete(key: _userKey);
+    await _deleteSecure(_tokenKey);
+    await _deleteSecure(_userKey);
   }
 
   Future<AuthTokens?> getStoredTokens() async {
-    final tokensJson = await _storage.read(key: _tokenKey);
+    final tokensJson = await _readSecure(_tokenKey);
     if (tokensJson == null) return null;
-    
+
     try {
       return AuthTokens.fromJson(jsonDecode(tokensJson));
     } catch (e) {
@@ -185,9 +259,9 @@ class AuthService {
   }
 
   Future<User?> getStoredUser() async {
-    final userJson = await _storage.read(key: _userKey);
+    final userJson = await _readSecure(_userKey);
     if (userJson == null) return null;
-    
+
     try {
       return User.fromJson(jsonDecode(userJson));
     } catch (e) {
@@ -196,16 +270,16 @@ class AuthService {
   }
 
   Future<void> _saveTokens(AuthTokens tokens) async {
-    await _storage.write(
-      key: _tokenKey,
-      value: jsonEncode(tokens.toJson()),
+    await _writeSecure(
+      _tokenKey,
+      jsonEncode(tokens.toJson()),
     );
   }
 
   Future<void> _saveUser(User user) async {
-    await _storage.write(
-      key: _userKey,
-      value: jsonEncode({
+    await _writeSecure(
+      _userKey,
+      jsonEncode({
         'id': user.id,
         'email': user.email,
         'first_name': user.firstName,

@@ -37,6 +37,11 @@ class TransactionsService {
           'Authorization': 'Bearer $accessToken',
         },
         body: jsonEncode(body),
+      ).timeout(
+        ApiConfig.receiveTimeout,
+        onTimeout: () {
+          throw Exception('Connection timeout. Please check your network connection.');
+        },
       );
 
       final responseData = jsonDecode(response.body);
@@ -82,6 +87,11 @@ class TransactionsService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
+        },
+      ).timeout(
+        ApiConfig.receiveTimeout,
+        onTimeout: () {
+          throw Exception('Connection timeout. Please check your network connection.');
         },
       );
 
@@ -138,6 +148,11 @@ class TransactionsService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
+        },
+      ).timeout(
+        ApiConfig.receiveTimeout,
+        onTimeout: () {
+          throw Exception('Connection timeout. Please check your network connection.');
         },
       );
 

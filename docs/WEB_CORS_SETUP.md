@@ -1,5 +1,14 @@
 # Web Platform CORS Configuration Guide
 
+## Important: Flutter Web Compatibility
+
+This app now includes **Web platform compatibility fixes**:
+
+✅ **Secure Storage**: Web-compatible storage using SharedPreferences fallback
+✅ **Error Handling**: Better error messages for connection issues
+✅ **Timeout Configuration**: Proper timeout handling for all API requests
+✅ **Platform Detection**: Automatic detection and handling of web platform
+
 ## Problem Overview
 
 When running the Sure mobile app as a **web application**, you may encounter CORS (Cross-Origin Resource Sharing) errors when connecting to the backend API. This happens because:
@@ -162,12 +171,27 @@ For local development, use:
 
 ## Troubleshooting
 
+### Issue: "Connection failed" without CORS error in console
+
+This usually means:
+1. **Backend URL is incorrect** - Check the URL in Backend Configuration screen
+2. **Backend server is not running** - Ensure `rails server` is running
+3. **Firewall blocking connection** - Check firewall settings
+4. **Wrong port** - Ensure backend is running on the port you specified
+
+**How to debug:**
+1. Open browser DevTools (F12)
+2. Go to Network tab
+3. Try to login
+4. Check if the request appears and what error it shows
+
 ### Issue: Still getting CORS errors after configuration
 
 **Check:**
 1. Backend server was restarted after CORS configuration
 2. Origin in the error message matches the allowed origins
 3. CORS middleware is loaded (check `config/application.rb`)
+4. Check browser console for the exact error message
 
 ### Issue: Preflight OPTIONS requests failing
 
