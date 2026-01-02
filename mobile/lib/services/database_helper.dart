@@ -2,7 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:flutter/foundation.dart';
 import '../models/account.dart';
-import '../models/transaction.dart';
+import '../models/transaction.dart' as models;
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -142,7 +142,7 @@ class DatabaseHelper {
 
   // ==================== Transaction Operations ====================
 
-  Future<void> insertTransaction(Transaction transaction, {String syncStatus = 'synced'}) async {
+  Future<void> insertTransaction(models.Transaction transaction, {String syncStatus = 'synced'}) async {
     final db = await database;
 
     final transactionId = transaction.id ?? _generateLocalId();
@@ -166,7 +166,7 @@ class DatabaseHelper {
     );
   }
 
-  Future<void> insertTransactions(List<Transaction> transactions) async {
+  Future<void> insertTransactions(List<models.Transaction> transactions) async {
     final db = await database;
     final batch = db.batch();
 

@@ -7,7 +7,7 @@ class ConnectivityService {
   final StreamController<bool> _connectionStatusController = StreamController<bool>.broadcast();
 
   bool _isConnected = false;
-  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  StreamSubscription<ConnectivityResult>? _connectivitySubscription;
 
   bool get isConnected => _isConnected;
   Stream<bool> get connectionStatusStream => _connectionStatusController.stream;
@@ -22,16 +22,16 @@ class ConnectivityService {
 
     // Listen to connectivity changes
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
-      (List<ConnectivityResult> results) {
-        _updateConnectionStatus(results);
+      (ConnectivityResult result) {
+        _updateConnectionStatus(result);
       },
     );
   }
 
   Future<void> _checkConnectivity() async {
     try {
-      final results = await _connectivity.checkConnectivity();
-      _updateConnectionStatus(results);
+      final result = await _connectivity.checkConnectivity();
+      _updateConnectionStatus(result);
     } catch (e) {
       debugPrint('Error checking connectivity: $e');
       _isConnected = false;
@@ -39,13 +39,13 @@ class ConnectivityService {
     }
   }
 
-  void _updateConnectionStatus(List<ConnectivityResult> results) {
+  void _updateConnectionStatus(ConnectivityResult result) {
     final wasConnected = _isConnected;
 
-    // Consider connected if any result is not 'none'
-    _isConnected = results.any((result) => result != ConnectivityResult.none);
+    // Consider connected if result is not 'none'
+    _isConnected = result != ConnectivityResult.none;
 
-    debugPrint('Connectivity changed: $_isConnected (results: $results)');
+    debugPrint('Connectivity changed: $_isConnected (result: $result)');
 
     // Notify listeners if status changed
     if (wasConnected != _isConnected) {

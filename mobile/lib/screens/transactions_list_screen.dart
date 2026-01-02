@@ -214,10 +214,12 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
     if (confirmed != true) return false;
 
     // Perform the deletion
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final transactionsProvider = Provider.of<TransactionsProvider>(context, listen: false);
     final accessToken = await authProvider.getValidAccessToken();
+
+    if (!mounted) return false;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     if (accessToken == null) {
       scaffoldMessenger.showSnackBar(
