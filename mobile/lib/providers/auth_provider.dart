@@ -3,10 +3,12 @@ import '../models/user.dart';
 import '../models/auth_tokens.dart';
 import '../services/auth_service.dart';
 import '../services/device_service.dart';
+import '../services/sync_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
   final DeviceService _deviceService = DeviceService();
+  final SyncService _syncService = SyncService();
 
   User? _user;
   AuthTokens? _tokens;
@@ -84,6 +86,12 @@ class AuthProvider with ChangeNotifier {
         _showMfaInput = false; // Reset on successful login
         _isLoading = false;
         notifyListeners();
+
+        // Perform initial sync after successful login
+        if (_tokens != null) {
+          _performInitialSync(_tokens!.accessToken);
+        }
+
         return true;
       } else {
         if (result['mfa_required'] == true) {
@@ -147,6 +155,12 @@ class AuthProvider with ChangeNotifier {
         _user = result['user'] as User?;
         _isLoading = false;
         notifyListeners();
+
+        // Perform initial sync after successful signup
+        if (_tokens != null) {
+          _performInitialSync(_tokens!.accessToken);
+        }
+
         return true;
       } else {
         _errorMessage = result['error'] as String?;
@@ -209,5 +223,20 @@ class AuthProvider with ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  // Perform initial sync in background after login
+  Future<void> _performInitialSync(String accessToken) async {
+    try {
+      debugPrint('Starting initial sync after login...');
+      await _syncService.initialSync(
+        accessToken: accessToken,
+        daysToSync: 7, // Default 7 days
+      );
+      debugPrint('Initial sync completed successfully');
+    } catch (e) {
+      debugPrint('Initial sync failed: $e');
+      // Don't block login on sync failure
+    }
   }
 }

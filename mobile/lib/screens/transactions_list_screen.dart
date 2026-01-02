@@ -214,10 +214,12 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
     if (confirmed != true) return false;
 
     // Perform the deletion
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final transactionsProvider = Provider.of<TransactionsProvider>(context, listen: false);
     final accessToken = await authProvider.getValidAccessToken();
+
+    if (!mounted) return false;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     if (accessToken == null) {
       scaffoldMessenger.showSnackBar(
@@ -388,6 +390,9 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                   confirmDismiss: (direction) => _confirmAndDeleteTransaction(transaction),
                   child: Card(
                     margin: const EdgeInsets.only(bottom: 12),
+                    color: transaction.isPending
+                        ? Colors.grey.withValues(alpha: 0.2)
+                        : null,
                     child: InkWell(
                       onTap: _isSelectionMode && transaction.id != null
                           ? () => _toggleTransactionSelection(transaction.id!)
@@ -424,11 +429,48 @@ class _TransactionsListScreenState extends State<TransactionsListScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    transaction.name,
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                          fontWeight: FontWeight.w600,
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          transaction.name,
+                                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                         ),
+                                      ),
+                                      if (transaction.isPending)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.orange.withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(
+                                              color: Colors.orange.withValues(alpha: 0.5),
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.cloud_upload_outlined,
+                                                size: 12,
+                                                color: Colors.orange.shade700,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'Pending',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: Colors.orange.shade700,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
