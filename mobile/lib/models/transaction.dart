@@ -7,6 +7,8 @@ class Transaction {
   final String currency;
   final String nature; // "expense" or "income"
   final String? notes;
+  final String syncStatus; // "synced", "pending", "failed"
+  final String? localId; // Local ID for unsynced transactions
 
   Transaction({
     this.id,
@@ -17,6 +19,8 @@ class Transaction {
     required this.currency,
     required this.nature,
     this.notes,
+    this.syncStatus = 'synced',
+    this.localId,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
@@ -29,6 +33,8 @@ class Transaction {
       currency: json['currency']?.toString() ?? '',
       nature: json['nature']?.toString() ?? 'expense',
       notes: json['notes']?.toString(),
+      syncStatus: json['sync_status']?.toString() ?? 'synced',
+      localId: json['local_id']?.toString(),
     );
   }
 
@@ -42,9 +48,14 @@ class Transaction {
       'currency': currency,
       'nature': nature,
       if (notes != null) 'notes': notes,
+      'sync_status': syncStatus,
+      if (localId != null) 'local_id': localId,
     };
   }
 
   bool get isExpense => nature == 'expense';
   bool get isIncome => nature == 'income';
+  bool get isPending => syncStatus == 'pending';
+  bool get isSynced => syncStatus == 'synced';
+  bool get isFailed => syncStatus == 'failed';
 }

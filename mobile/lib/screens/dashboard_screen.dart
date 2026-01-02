@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/account.dart';
 import '../providers/auth_provider.dart';
 import '../providers/accounts_provider.dart';
+import '../providers/transactions_provider.dart';
 import '../widgets/account_card.dart';
 import 'transaction_form_screen.dart';
 import 'transactions_list_screen.dart';
@@ -44,7 +45,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _handleRefresh() async {
-    await _loadAccounts();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final accountsProvider = Provider.of<AccountsProvider>(context, listen: false);
+    final transactionsProvider = Provider.of<TransactionsProvider>(context, listen: false);
+
+    final accessToken = await authProvider.getValidAccessToken();
+    if (accessToken == null) return;
+
+    // Perform full sync
+    await accountsProvider.performFullSync(
+      accessToken: accessToken,
+      daysToSync: 7,
+    );
+
+    // Also sync pending transactions if any
+    if (transactionsProvider.pendingTransactionsCount > 0) {
+      await transactionsProvider.syncPendingTransactions(
+        accessToken: accessToken,
+      );
+    }
   }
 
   List<String> _formatCurrencyItem(String currency, double amount) {
@@ -193,10 +212,78 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: const Text('Dashboard'),
         actions: [
+          Consumer2<AccountsProvider, TransactionsProvider>(
+            builder: (context, accountsProvider, transactionsProvider, _) {
+              final isOnline = accountsProvider.isOnline;
+              final isSyncing = accountsProvider.isSyncing || transactionsProvider.isSyncing;
+              final pendingCount = transactionsProvider.pendingTransactionsCount;
+
+              return Row(
+                children: [
+                  // Pending transactions indicator
+                  if (pendingCount > 0)
+                    Tooltip(
+                      message: '$pendingCount pending transaction(s)',
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.orange.withValues(alpha: 0.5),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.cloud_upload_outlined,
+                              size: 14,
+                              color: Colors.orange.shade700,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$pendingCount',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.orange.shade700,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+
+                  // Sync indicator
+                  if (isSyncing)
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    )
+                  else
+                    Tooltip(
+                      message: isOnline ? 'Online' : 'Offline',
+                      child: Icon(
+                        isOnline ? Icons.cloud_done : Icons.cloud_off,
+                        size: 20,
+                        color: isOnline ? Colors.green : Colors.grey,
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                ],
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _handleRefresh,
-            tooltip: 'Refresh',
+            tooltip: 'Sync',
           ),
           IconButton(
             icon: const Icon(Icons.logout),
