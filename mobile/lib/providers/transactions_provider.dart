@@ -19,6 +19,7 @@ class TransactionsProvider with ChangeNotifier {
   String? _error;
   ConnectivityService? _connectivityService;
   String? _lastAccessToken;
+  String? _lastAccountId;
   bool _isAutoSyncing = false;
   bool _isListenerAttached = false;
   bool _isDisposed = false;
@@ -39,9 +40,17 @@ class TransactionsProvider with ChangeNotifier {
   SyncService get syncService => _syncService;
 
   void setConnectivityService(ConnectivityService service) {
+    // Remove listener from old service if it exists
+    if (_isListenerAttached && _connectivityService != null) {
+      _connectivityService!.removeListener(_onConnectivityChanged);
+      _isListenerAttached = false;
+    }
+
     _connectivityService = service;
+
+    // Add listener to new service
     if (!_isListenerAttached) {
-      _connectivityService?.addListener(_onConnectivityChanged);
+      _connectivityService.addListener(_onConnectivityChanged);
       _isListenerAttached = true;
     }
   }
@@ -88,6 +97,7 @@ class TransactionsProvider with ChangeNotifier {
     bool forceSync = false,
   }) async {
     _lastAccessToken = accessToken; // Store for auto-sync
+    _lastAccountId = accountId; // Store for auto-sync and reload
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -149,9 +159,10 @@ class TransactionsProvider with ChangeNotifier {
     String? notes,
   }) async {
     _lastAccessToken = accessToken; // Store for auto-sync
+    _lastAccountId = accountId; // Store for reload
 
     try {
-      final isOnline = _connectivityService?.isOnline ?? false;
+      final isOnline = _connectivityService?.isOnline ?? true;
 
       _log.info('TransactionsProvider', 'Creating transaction: $name, amount: $amount, online: $isOnline');
 
@@ -229,7 +240,7 @@ class TransactionsProvider with ChangeNotifier {
     required String transactionId,
   }) async {
     try {
-      final isOnline = _connectivityService?.isOnline ?? false;
+      final isOnline = _connectivityService?.isOnline ?? true;
 
       if (isOnline) {
         // Try to delete on server
@@ -245,7 +256,9 @@ class TransactionsProvider with ChangeNotifier {
           notifyListeners();
           return true;
         } else {
-          _error = result['error'] as String? ?? 'Failed to delete transaction';
+          final serverError = result['error'] as String? ?? 'Unknown error';
+          _log.error('TransactionsProvider', 'Server delete failed: $serverError');
+          _error = 'Failed to delete transaction. Please try again.';
           notifyListeners();
           return false;
         }
@@ -255,7 +268,9 @@ class TransactionsProvider with ChangeNotifier {
         await _offlineStorage.markTransactionForDeletion(transactionId);
 
         // Reload from storage to update UI with pending delete status
-        final updatedTransactions = await _offlineStorage.getTransactions();
+        final updatedTransactions = await _offlineStorage.getTransactions(
+          accountId: _lastAccountId,
+        );
         _transactions = updatedTransactions;
         notifyListeners();
         return true;
@@ -274,7 +289,7 @@ class TransactionsProvider with ChangeNotifier {
     required List<String> transactionIds,
   }) async {
     try {
-      final isOnline = _connectivityService?.isOnline ?? false;
+      final isOnline = _connectivityService?.isOnline ?? true;
 
       if (isOnline) {
         final result = await _transactionsService.deleteMultipleTransactions(
@@ -291,7 +306,9 @@ class TransactionsProvider with ChangeNotifier {
           notifyListeners();
           return true;
         } else {
-          _error = result['error'] as String? ?? 'Failed to delete transactions';
+          final serverError = result['error'] as String? ?? 'Unknown error';
+          _log.error('TransactionsProvider', 'Server delete multiple failed: $serverError');
+          _error = 'Failed to delete transactions. Please try again.';
           notifyListeners();
           return false;
         }
@@ -303,7 +320,9 @@ class TransactionsProvider with ChangeNotifier {
         }
 
         // Reload from storage to update UI with pending delete status
-        final updatedTransactions = await _offlineStorage.getTransactions();
+        final updatedTransactions = await _offlineStorage.getTransactions(
+          accountId: _lastAccountId,
+        );
         _transactions = updatedTransactions;
         notifyListeners();
         return true;
@@ -328,7 +347,9 @@ class TransactionsProvider with ChangeNotifier {
 
       if (success) {
         // Reload from storage to update UI
-        final updatedTransactions = await _offlineStorage.getTransactions();
+        final updatedTransactions = await _offlineStorage.getTransactions(
+          accountId: _lastAccountId,
+        );
         _transactions = updatedTransactions;
         _error = null;
         notifyListeners();
@@ -364,7 +385,9 @@ class TransactionsProvider with ChangeNotifier {
 
       if (result.success) {
         // Reload from local storage
-        final updatedTransactions = await _offlineStorage.getTransactions();
+        final updatedTransactions = await _offlineStorage.getTransactions(
+          accountId: _lastAccountId,
+        );
         _transactions = updatedTransactions;
         _error = null;
       } else {

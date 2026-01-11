@@ -52,12 +52,8 @@ class SyncService with ChangeNotifier {
               await _offlineStorage.deleteTransaction(transaction.localId);
               successCount++;
             } else {
-              // Mark as failed but keep it as pending delete for retry
-              _log.error('SyncService', 'Delete failed: ${result['error']}');
-              await _offlineStorage.updateTransactionSyncStatus(
-                localId: transaction.localId,
-                syncStatus: SyncStatus.failed,
-              );
+              // Keep as pendingDelete for retry (don't mark as failed)
+              _log.error('SyncService', 'Delete failed: ${result['error']}. Will retry on next sync.');
               failureCount++;
               lastError = result['error'] as String?;
             }
@@ -68,12 +64,8 @@ class SyncService with ChangeNotifier {
             successCount++;
           }
         } catch (e) {
-          // Mark as failed
-          _log.error('SyncService', 'Delete exception: $e');
-          await _offlineStorage.updateTransactionSyncStatus(
-            localId: transaction.localId,
-            syncStatus: SyncStatus.failed,
-          );
+          // Keep as pendingDelete for retry (don't mark as failed)
+          _log.error('SyncService', 'Delete exception: $e. Will retry on next sync.');
           failureCount++;
           lastError = e.toString();
         }
@@ -138,22 +130,14 @@ class SyncService with ChangeNotifier {
             );
             successCount++;
           } else {
-            // Mark as failed
-            _log.error('SyncService', 'Upload failed: ${result['error']}');
-            await _offlineStorage.updateTransactionSyncStatus(
-              localId: transaction.localId,
-              syncStatus: SyncStatus.failed,
-            );
+            // Keep as pending for retry (don't mark as failed)
+            _log.error('SyncService', 'Upload failed: ${result['error']}. Will retry on next sync.');
             failureCount++;
             lastError = result['error'] as String?;
           }
         } catch (e) {
-          // Mark as failed
-          _log.error('SyncService', 'Upload exception: $e');
-          await _offlineStorage.updateTransactionSyncStatus(
-            localId: transaction.localId,
-            syncStatus: SyncStatus.failed,
-          );
+          // Keep as pending for retry (don't mark as failed)
+          _log.error('SyncService', 'Upload exception: $e. Will retry on next sync.');
           failureCount++;
           lastError = e.toString();
         }

@@ -187,8 +187,8 @@ class DatabaseHelper {
     final db = await database;
     return await db.query(
       'transactions',
-      where: 'sync_status = ?',
-      whereArgs: ['pending'],
+      where: 'sync_status IN (?, ?)',
+      whereArgs: ['pending', 'failed'],
       orderBy: 'created_at ASC',
     );
   }

@@ -41,8 +41,6 @@ class SyncStatusBadge extends StatelessWidget {
         text = 'Failed';
         semanticsLabel = 'Sync failed';
         break;
-      case SyncStatus.synced:
-        return const SizedBox.shrink();
     }
 
     if (compact) {

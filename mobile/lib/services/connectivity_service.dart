@@ -35,13 +35,12 @@ class ConnectivityService with ChangeNotifier {
   void _updateConnectionStatus(List<ConnectivityResult> results) {
     final wasOnline = _isOnline;
 
-    // Check if any result indicates connectivity
+    // Check if any result indicates connectivity (exclude Bluetooth)
     _isOnline = results.any((result) =>
         result == ConnectivityResult.mobile ||
         result == ConnectivityResult.wifi ||
         result == ConnectivityResult.ethernet ||
-        result == ConnectivityResult.vpn ||
-        result == ConnectivityResult.bluetooth);
+        result == ConnectivityResult.vpn);
 
     _log.info('ConnectivityService', 'Connectivity changed: $results -> ${_isOnline ? "ONLINE" : "OFFLINE"}');
 
