@@ -50,7 +50,7 @@ class TransactionsProvider with ChangeNotifier {
 
     // Add listener to new service
     if (!_isListenerAttached) {
-      _connectivityService.addListener(_onConnectivityChanged);
+      service.addListener(_onConnectivityChanged);
       _isListenerAttached = true;
     }
   }

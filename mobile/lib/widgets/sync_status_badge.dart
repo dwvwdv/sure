@@ -41,6 +41,13 @@ class SyncStatusBadge extends StatelessWidget {
         text = 'Failed';
         semanticsLabel = 'Sync failed';
         break;
+      case SyncStatus.synced:
+        // This case is unreachable due to early return above, but required for exhaustive switch
+        color = Colors.green;
+        icon = Icons.check_circle;
+        text = 'Synced';
+        semanticsLabel = 'Transaction synced';
+        break;
     }
 
     if (compact) {
