@@ -346,6 +346,6 @@ class CoinstatsItem::WalletLinkerTest < ActiveSupport::TestCase
     # Verify both accounts exist with same token but different addresses
     btc_accounts = @coinstats_item.coinstats_accounts.where(account_id: "bitcoin")
     assert_equal 2, btc_accounts.count
-    assert_equal ["bc1qwallet1", "bc1qwallet2"], btc_accounts.pluck(:address).sort
+    assert_equal [ "bc1qwallet1", "bc1qwallet2" ], btc_accounts.pluck(:address).sort
   end
 end
