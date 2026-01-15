@@ -53,17 +53,43 @@ class CoinstatsAccountTest < ActiveSupport::TestCase
     assert_includes coinstats_account.errors[:currency], "can't be blank"
   end
 
-  test "account_id is unique per coinstats_item" do
-    @coinstats_account.update!(account_id: "unique_account_id_123")
+  test "account_id is unique per coinstats_item, address, and blockchain" do
+    @coinstats_account.update!(
+      account_id: "unique_account_id_123",
+      address: "0x123abc",
+      blockchain: "ethereum"
+    )
 
+    # Same account_id but same wallet (address + blockchain) should fail
     duplicate = @coinstats_item.coinstats_accounts.build(
       name: "Duplicate",
       currency: "USD",
-      account_id: "unique_account_id_123"
+      account_id: "unique_account_id_123",
+      address: "0x123abc",
+      blockchain: "ethereum"
     )
 
     assert_not duplicate.valid?
     assert_includes duplicate.errors[:account_id], "has already been taken"
+  end
+
+  test "allows same account_id for different wallet addresses" do
+    @coinstats_account.update!(
+      account_id: "bitcoin_token",
+      address: "bc1qwallet1",
+      blockchain: "bitcoin"
+    )
+
+    # Same token (account_id) but different wallet address should be allowed
+    second_wallet = @coinstats_item.coinstats_accounts.build(
+      name: "Second BTC Wallet",
+      currency: "USD",
+      account_id: "bitcoin_token",
+      address: "bc1qwallet2",
+      blockchain: "bitcoin"
+    )
+
+    assert second_wallet.valid?, "Should allow same token in different wallet addresses"
   end
 
   test "allows nil account_id for multiple accounts" do
@@ -156,6 +182,42 @@ class CoinstatsAccountTest < ActiveSupport::TestCase
     @coinstats_account.reload
 
     assert_equal "existing_id", @coinstats_account.account_id
+  end
+
+  test "upsert_coinstats_snapshot sets address and blockchain if not already set" do
+    @coinstats_account.update!(address: nil, blockchain: nil)
+
+    snapshot = {
+      address: "0x123abc",
+      blockchain: "ethereum",
+      balance: 1000.0,
+      currency: "USD",
+      name: "Test"
+    }
+
+    @coinstats_account.upsert_coinstats_snapshot!(snapshot)
+    @coinstats_account.reload
+
+    assert_equal "0x123abc", @coinstats_account.address
+    assert_equal "ethereum", @coinstats_account.blockchain
+  end
+
+  test "upsert_coinstats_snapshot preserves existing address and blockchain" do
+    @coinstats_account.update!(address: "existing_address", blockchain: "existing_chain")
+
+    snapshot = {
+      address: "different_address",
+      blockchain: "different_chain",
+      balance: 1000.0,
+      currency: "USD",
+      name: "Test"
+    }
+
+    @coinstats_account.upsert_coinstats_snapshot!(snapshot)
+    @coinstats_account.reload
+
+    assert_equal "existing_address", @coinstats_account.address
+    assert_equal "existing_chain", @coinstats_account.blockchain
   end
 
   test "upsert_coinstats_transactions_snapshot stores transactions array" do

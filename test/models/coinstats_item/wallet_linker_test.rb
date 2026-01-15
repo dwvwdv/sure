@@ -277,4 +277,75 @@ class CoinstatsItem::WalletLinkerTest < ActiveSupport::TestCase
     coinstats_account = @coinstats_item.coinstats_accounts.last
     assert_equal "fallback_id_456", coinstats_account.account_id
   end
+
+  test "link sets address and blockchain on coinstats_account" do
+    token_data = [
+      { coinId: "bitcoin", name: "Bitcoin", amount: 0.5, price: 40000 }
+    ]
+
+    bulk_response = [
+      { blockchain: "bitcoin", address: "bc1qtest123", connectionId: "bitcoin", balances: token_data }
+    ]
+
+    Provider::Coinstats.any_instance.expects(:get_wallet_balances).returns(success_response(bulk_response))
+    Provider::Coinstats.any_instance.expects(:extract_wallet_balance).returns(token_data)
+
+    linker = CoinstatsItem::WalletLinker.new(@coinstats_item, address: "bc1qtest123", blockchain: "bitcoin")
+    linker.link
+
+    coinstats_account = @coinstats_item.coinstats_accounts.last
+    assert_equal "bc1qtest123", coinstats_account.address
+    assert_equal "bitcoin", coinstats_account.blockchain
+  end
+
+  test "link allows same token in multiple wallets" do
+    # Create first Bitcoin wallet
+    token_data = [
+      { coinId: "bitcoin", name: "Bitcoin", amount: 1.0, price: 40000 }
+    ]
+
+    bulk_response1 = [
+      { blockchain: "bitcoin", address: "bc1qwallet1", connectionId: "bitcoin", balances: token_data }
+    ]
+
+    Provider::Coinstats.any_instance.expects(:get_wallet_balances)
+      .with("bitcoin:bc1qwallet1")
+      .returns(success_response(bulk_response1))
+
+    Provider::Coinstats.any_instance.expects(:extract_wallet_balance)
+      .with(bulk_response1, "bc1qwallet1", "bitcoin")
+      .returns(token_data)
+
+    linker1 = CoinstatsItem::WalletLinker.new(@coinstats_item, address: "bc1qwallet1", blockchain: "bitcoin")
+    result1 = linker1.link
+
+    assert result1.success?
+    assert_equal 1, result1.created_count
+
+    # Create second Bitcoin wallet with same token
+    bulk_response2 = [
+      { blockchain: "bitcoin", address: "bc1qwallet2", connectionId: "bitcoin", balances: token_data }
+    ]
+
+    Provider::Coinstats.any_instance.expects(:get_wallet_balances)
+      .with("bitcoin:bc1qwallet2")
+      .returns(success_response(bulk_response2))
+
+    Provider::Coinstats.any_instance.expects(:extract_wallet_balance)
+      .with(bulk_response2, "bc1qwallet2", "bitcoin")
+      .returns(token_data)
+
+    linker2 = CoinstatsItem::WalletLinker.new(@coinstats_item, address: "bc1qwallet2", blockchain: "bitcoin")
+
+    assert_difference "CoinstatsAccount.count", 1 do
+      result2 = linker2.link
+      assert result2.success?, "Should allow same token in different wallet"
+      assert_equal 1, result2.created_count
+    end
+
+    # Verify both accounts exist with same token but different addresses
+    btc_accounts = @coinstats_item.coinstats_accounts.where(account_id: "bitcoin")
+    assert_equal 2, btc_accounts.count
+    assert_equal ["bc1qwallet1", "bc1qwallet2"], btc_accounts.pluck(:address).sort
+  end
 end

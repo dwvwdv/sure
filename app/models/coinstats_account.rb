@@ -10,7 +10,7 @@ class CoinstatsAccount < ApplicationRecord
   has_one :account, through: :account_provider, source: :account
 
   validates :name, :currency, presence: true
-  validates :account_id, uniqueness: { scope: :coinstats_item_id, allow_nil: true }
+  validates :account_id, uniqueness: { scope: [:coinstats_item_id, :address, :blockchain], allow_nil: true }
 
   # Alias for compatibility with provider adapter pattern
   alias_method :current_account, :account
@@ -37,6 +37,15 @@ class CoinstatsAccount < ApplicationRecord
     # Only set account_id if provided and not already set (preserves ID from initial creation)
     if snapshot[:id].present? && account_id.blank?
       attrs[:account_id] = snapshot[:id].to_s
+    end
+
+    # Set address and blockchain if provided and not already set (preserves from initial creation)
+    if snapshot[:address].present? && address.blank?
+      attrs[:address] = snapshot[:address]
+    end
+
+    if snapshot[:blockchain].present? && blockchain.blank?
+      attrs[:blockchain] = snapshot[:blockchain]
     end
 
     update!(attrs)
