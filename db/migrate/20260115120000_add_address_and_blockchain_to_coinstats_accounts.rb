@@ -1,4 +1,4 @@
-class AddAddressAndBlockchainToCoinstatsAccounts < ActiveRecord::Migration[8.0]
+class AddAddressAndBlockchainToCoinstatsAccounts < ActiveRecord::Migration[7.2]
   def change
     add_column :coinstats_accounts, :address, :string
     add_column :coinstats_accounts, :blockchain, :string
