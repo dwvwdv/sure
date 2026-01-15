@@ -4,7 +4,7 @@ class AddAddressAndBlockchainToCoinstatsAccounts < ActiveRecord::Migration[8.0]
     add_column :coinstats_accounts, :blockchain, :string
 
     # Add index for the new uniqueness constraint
-    add_index :coinstats_accounts, [:coinstats_item_id, :account_id, :address, :blockchain],
+    add_index :coinstats_accounts, [ :coinstats_item_id, :account_id, :address, :blockchain ],
               unique: true,
               name: "index_coinstats_accounts_on_item_token_and_wallet",
               where: "account_id IS NOT NULL AND address IS NOT NULL AND blockchain IS NOT NULL"
