@@ -7,6 +7,7 @@ import '../providers/transactions_provider.dart';
 import '../services/log_service.dart';
 import '../services/preferences_service.dart';
 import '../widgets/account_card.dart';
+import '../widgets/calendar_widget.dart';
 import '../widgets/connectivity_banner.dart';
 import '../widgets/net_worth_card.dart';
 import '../widgets/currency_filter.dart';
@@ -517,6 +518,11 @@ class DashboardScreenState extends State<DashboardScreen> {
                     },
                     formatAmount: _formatAmount,
                   ),
+                ),
+
+                // Calendar widget
+                const SliverToBoxAdapter(
+                  child: CalendarWidget(),
                 ),
 
                 // Currency filter
