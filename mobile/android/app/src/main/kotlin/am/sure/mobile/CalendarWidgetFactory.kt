@@ -104,13 +104,11 @@ class CalendarWidgetFactory(
             list.add(Pair(day, dailyData[day]))
         }
 
-        // Trailing blanks to complete last row
-        val remainder = list.size % 7
-        if (remainder != 0) {
-            repeat(7 - remainder) { list.add(Pair(null, null)) }
-        }
+        // Pad to exactly 42 cells (6 full rows × 7 cols) so the GridView
+        // always fills the available height uniformly with no empty gap below.
+        while (list.size < 42) { list.add(Pair(null, null)) }
 
-        items = list
+        items = list.take(42)
     }
 
     /** Short compact amount: +1.2K, -830, +12.5K etc. */
