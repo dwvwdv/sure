@@ -19,45 +19,10 @@ import kotlin.math.abs
  * Displays a monthly calendar grid where each day shows transaction amounts
  * (green = income, red = expense), matching the app's Calendar screen.
  * Supports month and account navigation via button taps.
- *
- * Data flow:
- *   Flutter → HomeWidgetService → HomeWidgetPreferences (SharedPrefs)
- *   CalendarWidgetProvider reads HomeWidgetPreferences + manages its own
- *   display state in CalendarWidgetState (month offset, account index).
  */
 class CalendarWidgetProvider : AppWidgetProvider() {
 
-    companion object {
-        const val ACTION_PREV_MONTH    = "am.sure.mobile.widget.PREV_MONTH"
-        const val ACTION_NEXT_MONTH    = "am.sure.mobile.widget.NEXT_MONTH"
-        const val ACTION_PREV_ACCOUNT  = "am.sure.mobile.widget.PREV_ACCOUNT"
-        const val ACTION_NEXT_ACCOUNT  = "am.sure.mobile.widget.NEXT_ACCOUNT"
-
-        // SharedPrefs written by Flutter via home_widget package
-        const val PREFS_HOME_WIDGET  = "HomeWidgetPreferences"
-        const val KEY_ACCOUNT_LIST   = "widget_account_list"  // "Name:id|Name:id"
-        const val KEY_CURRENCY       = "widget_currency"
-        const val KEY_DAYS_PREFIX    = "widget_days_"          // widget_days_{accountId}_{YYYY-MM}
-
-        // Widget's own display state (independent of Flutter)
-        const val PREFS_WIDGET_STATE = "CalendarWidgetState"
-        const val KEY_MONTH_OFFSET   = "month_offset"          // int, months relative to today
-        const val KEY_ACCOUNT_IDX    = "account_idx"           // int
-
-        fun forceUpdate(context: Context) {
-            val manager = AppWidgetManager.getInstance(context)
-            val ids = manager.getAppWidgetIds(
-                ComponentName(context, CalendarWidgetProvider::class.java)
-            )
-            if (ids.isNotEmpty()) {
-                val intent = Intent(context, CalendarWidgetProvider::class.java).apply {
-                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-                }
-                context.sendBroadcast(intent)
-            }
-        }
-    }
+    // --- Lifecycle ---
 
     override fun onUpdate(
         context: Context,
@@ -84,21 +49,23 @@ class CalendarWidgetProvider : AppWidgetProvider() {
             }
             ACTION_PREV_ACCOUNT -> {
                 val homePrefs = context.getSharedPreferences(PREFS_HOME_WIDGET, Context.MODE_PRIVATE)
-                val count = parseAccountList(homePrefs.getString(KEY_ACCOUNT_LIST, "") ?: "").size.coerceAtLeast(1)
+                val count: Int = parseAccountList(homePrefs.getString(KEY_ACCOUNT_LIST, "") ?: "").size.coerceAtLeast(1)
                 val idx = statePrefs.getInt(KEY_ACCOUNT_IDX, 0)
-                statePrefs.edit().putInt(KEY_ACCOUNT_IDX, (idx - 1 + count) % count).apply()
+                statePrefs.edit().putInt(KEY_ACCOUNT_IDX, ((idx - 1 + count) % count)).apply()
                 forceUpdate(context)
             }
             ACTION_NEXT_ACCOUNT -> {
                 val homePrefs = context.getSharedPreferences(PREFS_HOME_WIDGET, Context.MODE_PRIVATE)
-                val count = parseAccountList(homePrefs.getString(KEY_ACCOUNT_LIST, "") ?: "").size.coerceAtLeast(1)
+                val count: Int = parseAccountList(homePrefs.getString(KEY_ACCOUNT_LIST, "") ?: "").size.coerceAtLeast(1)
                 val idx = statePrefs.getInt(KEY_ACCOUNT_IDX, 0)
-                statePrefs.edit().putInt(KEY_ACCOUNT_IDX, (idx + 1) % count).apply()
+                statePrefs.edit().putInt(KEY_ACCOUNT_IDX, ((idx + 1) % count)).apply()
                 forceUpdate(context)
             }
             else -> super.onReceive(context, intent)
         }
     }
+
+    // --- Private ---
 
     private fun updateAppWidget(
         context: Context,
@@ -159,7 +126,7 @@ class CalendarWidgetProvider : AppWidgetProvider() {
         }
         views.setRemoteAdapter(R.id.widget_calendar_grid, serviceIntent)
 
-        // Tap on widget opens app to Calendar tab
+        // Tap on widget opens app
         val openApp = PendingIntent.getActivity(
             context, 0,
             Intent(context, MainActivity::class.java).apply {
@@ -184,13 +151,49 @@ class CalendarWidgetProvider : AppWidgetProvider() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-    companion object Helpers {
+    // -------------------------------------------------------------------------
+    // Single companion object — constants + shared helpers used by Factory too
+    // -------------------------------------------------------------------------
+    companion object {
+        // Broadcast actions for navigation buttons
+        const val ACTION_PREV_MONTH   = "am.sure.mobile.widget.PREV_MONTH"
+        const val ACTION_NEXT_MONTH   = "am.sure.mobile.widget.NEXT_MONTH"
+        const val ACTION_PREV_ACCOUNT = "am.sure.mobile.widget.PREV_ACCOUNT"
+        const val ACTION_NEXT_ACCOUNT = "am.sure.mobile.widget.NEXT_ACCOUNT"
+
+        // SharedPrefs written by Flutter via home_widget package
+        const val PREFS_HOME_WIDGET = "HomeWidgetPreferences"
+        const val KEY_ACCOUNT_LIST  = "widget_account_list"   // "Name:id|Name:id"
+        const val KEY_CURRENCY      = "widget_currency"
+        const val KEY_DAYS_PREFIX   = "widget_days_"           // widget_days_{accountId}_{YYYY-MM}
+
+        // Widget's own display state (independent of Flutter)
+        const val PREFS_WIDGET_STATE = "CalendarWidgetState"
+        const val KEY_MONTH_OFFSET   = "month_offset"
+        const val KEY_ACCOUNT_IDX    = "account_idx"
+
+        fun forceUpdate(context: Context) {
+            val manager = AppWidgetManager.getInstance(context)
+            val ids = manager.getAppWidgetIds(
+                ComponentName(context, CalendarWidgetProvider::class.java)
+            )
+            if (ids.isNotEmpty()) {
+                context.sendBroadcast(
+                    Intent(context, CalendarWidgetProvider::class.java).apply {
+                        action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                    }
+                )
+            }
+        }
+
         /** Parses "AccountName:accountId|AccountName2:accountId2" */
         fun parseAccountList(raw: String): List<Pair<String, String>> {
             if (raw.isBlank()) return emptyList()
             return raw.split("|").mapNotNull { entry ->
                 val idx = entry.lastIndexOf(':')
-                if (idx < 0) null else Pair(entry.substring(0, idx), entry.substring(idx + 1))
+                if (idx < 0) null
+                else Pair(entry.substring(0, idx), entry.substring(idx + 1))
             }
         }
 
