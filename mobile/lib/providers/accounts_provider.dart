@@ -131,9 +131,9 @@ class AccountsProvider with ChangeNotifier {
       _isInitializing = false;
       notifyListeners();
 
-      // Refresh home screen widget with latest account data
+      // Refresh home screen widget with latest account list
       if (_accounts.isNotEmpty) {
-        HomeWidgetService.instance.updateWidget(accounts: _accounts);
+        HomeWidgetService.instance.updateAccounts(accounts: _accounts);
       }
 
       return _accounts.isNotEmpty;
