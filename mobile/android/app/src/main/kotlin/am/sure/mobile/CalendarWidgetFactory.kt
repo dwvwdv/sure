@@ -45,10 +45,10 @@ class CalendarWidgetFactory(
         val (day, amount) = items.getOrNull(position) ?: return views
 
         if (day == null) {
-            // Empty leading/trailing cell
+            // Empty leading/trailing cell — transparent background
             views.setTextViewText(R.id.cell_day, "")
             views.setTextViewText(R.id.cell_amount, "")
-            views.setInt(R.id.cell_root, "setBackgroundResource", android.R.color.transparent)
+            views.setInt(R.id.cell_root, "setBackgroundColor", Color.TRANSPARENT)
             return views
         }
 

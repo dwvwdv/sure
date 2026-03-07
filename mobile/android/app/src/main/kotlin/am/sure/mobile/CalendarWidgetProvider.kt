@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.RemoteViews
 import java.text.DecimalFormat
@@ -72,6 +73,25 @@ class CalendarWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetId: Int
     ) {
+        try {
+            updateAppWidgetInternal(context, appWidgetManager, appWidgetId)
+        } catch (e: Exception) {
+            try {
+                // Fallback: show a minimal compact widget with error info
+                val fallback = RemoteViews(context.packageName, R.layout.calendar_widget_compact)
+                fallback.setTextViewText(R.id.widget_account_name, "Widget Error")
+                fallback.setTextViewText(R.id.widget_month_label, e.javaClass.simpleName)
+                fallback.setTextViewText(R.id.widget_monthly_total, e.message ?: "unknown error")
+                appWidgetManager.updateAppWidget(appWidgetId, fallback)
+            } catch (_: Exception) { /* ignore secondary failure */ }
+        }
+    }
+
+    private fun updateAppWidgetInternal(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int
+    ) {
         val homePrefs  = context.getSharedPreferences(PREFS_HOME_WIDGET,  Context.MODE_PRIVATE)
         val statePrefs = context.getSharedPreferences(PREFS_WIDGET_STATE, Context.MODE_PRIVATE)
 
@@ -121,6 +141,8 @@ class CalendarWidgetProvider : AppWidgetProvider() {
             views.setTextViewText(R.id.widget_weekday, wdayFmt.format(today.time).uppercase(Locale.getDefault()))
         } else {
             val serviceIntent = Intent(context, CalendarWidgetService::class.java).apply {
+                // Unique data URI ensures distinct factory per widget instance
+                data = Uri.parse("widget://calendar/$appWidgetId")
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
                 putExtra(CalendarWidgetService.EXTRA_YEAR,     displayYear)
                 putExtra(CalendarWidgetService.EXTRA_MONTH,    displayMonth)
@@ -130,7 +152,7 @@ class CalendarWidgetProvider : AppWidgetProvider() {
         }
 
         val openApp = PendingIntent.getActivity(
-            context, 0,
+            context, appWidgetId,
             Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             },
