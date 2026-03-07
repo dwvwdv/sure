@@ -77,8 +77,8 @@ class CalendarWidgetProvider : AppWidgetProvider() {
             updateAppWidgetInternal(context, appWidgetManager, appWidgetId)
         } catch (e: Exception) {
             try {
-                // Fallback: show a minimal compact widget with error info
-                val fallback = RemoteViews(context.packageName, R.layout.calendar_widget_compact)
+                // Fallback: use the ultra-minimal layout that can never fail to inflate
+                val fallback = RemoteViews(context.packageName, R.layout.calendar_widget_minimal)
                 fallback.setTextViewText(R.id.widget_account_name, "Widget Error")
                 fallback.setTextViewText(R.id.widget_month_label, e.javaClass.simpleName)
                 fallback.setTextViewText(R.id.widget_monthly_total, e.message ?: "unknown error")
