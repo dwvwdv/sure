@@ -51,7 +51,8 @@
             android:contentDescription="Next account" />
 
         <View android:layout_width="1dp" android:layout_height="16dp"
-            android:layout_marginHorizontal="6dp" android:background="#44FFFFFF" />
+            android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
+            android:background="#44FFFFFF" />
 
         <!-- Month nav -->
         <ImageButton
@@ -67,7 +68,8 @@
             android:id="@+id/widget_month_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="4dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
             android:text="2026-03"
             android:textColor="#FFFFFF"
             android:textSize="11sp"
@@ -122,7 +124,8 @@
         </LinearLayout>
 
         <View android:layout_width="1dp" android:layout_height="36dp"
-            android:layout_marginHorizontal="10dp" android:background="#44FFFFFF" />
+            android:layout_marginLeft="10dp" android:layout_marginRight="10dp"
+            android:background="#44FFFFFF" />
 
         <!-- Monthly change -->
         <LinearLayout
