@@ -7,7 +7,7 @@
     android:background="@drawable/widget_background"
     android:padding="10dp">
 
-    <!-- Combined header: account nav + month nav in one compact row -->
+    <!-- Combined header: account nav + separator + month nav (single 22dp row) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="22dp"
@@ -15,14 +15,15 @@
         android:gravity="center_vertical"
         android:layout_marginBottom="2dp">
 
-        <ImageButton
+        <TextView
             android:id="@+id/btn_prev_account"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@android:drawable/ic_media_previous"
-            android:background="@null"
-            android:tint="#CCFFFFFF"
-            android:contentDescription="Previous account" />
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:text="&#8249;"
+            android:textColor="#CCFFFFFF"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:padding="0dp" />
 
         <TextView
             android:id="@+id/widget_account_name"
@@ -37,48 +38,54 @@
             android:ellipsize="end"
             android:maxLines="1" />
 
-        <ImageButton
+        <TextView
             android:id="@+id/btn_next_account"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@android:drawable/ic_media_next"
-            android:background="@null"
-            android:tint="#CCFFFFFF"
-            android:contentDescription="Next account" />
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:text="&#8250;"
+            android:textColor="#CCFFFFFF"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:padding="0dp" />
 
-        <View android:layout_width="1dp" android:layout_height="14dp"
-            android:layout_marginLeft="4dp" android:layout_marginRight="4dp"
+        <View
+            android:layout_width="1dp"
+            android:layout_height="14dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
             android:background="#44FFFFFF" />
 
-        <ImageButton
+        <TextView
             android:id="@+id/btn_prev_month"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@android:drawable/ic_media_rew"
-            android:background="@null"
-            android:tint="#CCFFFFFF"
-            android:contentDescription="Previous month" />
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:text="&#171;"
+            android:textColor="#CCFFFFFF"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:padding="0dp" />
 
         <TextView
             android:id="@+id/widget_month_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
-            android:layout_marginRight="4dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
             android:text="2026-03"
             android:textColor="#FFFFFF"
             android:textSize="10sp"
             android:textStyle="bold"
             android:gravity="center" />
 
-        <ImageButton
+        <TextView
             android:id="@+id/btn_next_month"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@android:drawable/ic_media_ff"
-            android:background="@null"
-            android:tint="#CCFFFFFF"
-            android:contentDescription="Next month" />
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:text="&#187;"
+            android:textColor="#CCFFFFFF"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:padding="0dp" />
 
     </LinearLayout>
 
@@ -90,23 +97,23 @@
         android:layout_marginBottom="1dp">
 
         <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-            android:text="S" android:textColor="#AAFFFFFF" android:textSize="9sp" android:gravity="center" android:textStyle="bold"/>
+            android:text="S" android:textColor="#AAFFFFFF" android:textSize="8sp" android:gravity="center" android:textStyle="bold"/>
         <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-            android:text="M" android:textColor="#AAFFFFFF" android:textSize="9sp" android:gravity="center" android:textStyle="bold"/>
+            android:text="M" android:textColor="#AAFFFFFF" android:textSize="8sp" android:gravity="center" android:textStyle="bold"/>
         <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-            android:text="T" android:textColor="#AAFFFFFF" android:textSize="9sp" android:gravity="center" android:textStyle="bold"/>
+            android:text="T" android:textColor="#AAFFFFFF" android:textSize="8sp" android:gravity="center" android:textStyle="bold"/>
         <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-            android:text="W" android:textColor="#AAFFFFFF" android:textSize="9sp" android:gravity="center" android:textStyle="bold"/>
+            android:text="W" android:textColor="#AAFFFFFF" android:textSize="8sp" android:gravity="center" android:textStyle="bold"/>
         <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-            android:text="T" android:textColor="#AAFFFFFF" android:textSize="9sp" android:gravity="center" android:textStyle="bold"/>
+            android:text="T" android:textColor="#AAFFFFFF" android:textSize="8sp" android:gravity="center" android:textStyle="bold"/>
         <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-            android:text="F" android:textColor="#AAFFFFFF" android:textSize="9sp" android:gravity="center" android:textStyle="bold"/>
+            android:text="F" android:textColor="#AAFFFFFF" android:textSize="8sp" android:gravity="center" android:textStyle="bold"/>
         <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-            android:text="S" android:textColor="#AAFFFFFF" android:textSize="9sp" android:gravity="center" android:textStyle="bold"/>
+            android:text="S" android:textColor="#AAFFFFFF" android:textSize="8sp" android:gravity="center" android:textStyle="bold"/>
 
     </LinearLayout>
 
-    <!-- Calendar grid (GridView populated by RemoteViewsService) -->
+    <!-- Calendar grid (7 cols x 6 rows via RemoteViewsService) -->
     <GridView
         android:id="@+id/widget_calendar_grid"
         android:layout_width="match_parent"

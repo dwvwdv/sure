@@ -19,14 +19,15 @@
         android:layout_marginBottom="6dp">
 
         <!-- Account nav -->
-        <ImageButton
+        <TextView
             android:id="@+id/btn_prev_account"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@android:drawable/ic_media_previous"
-            android:background="@null"
-            android:tint="#CCFFFFFF"
-            android:contentDescription="Previous account" />
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:text="&#8249;"
+            android:textColor="#CCFFFFFF"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:padding="0dp" />
 
         <TextView
             android:id="@+id/widget_account_name"
@@ -41,28 +42,30 @@
             android:ellipsize="end"
             android:maxLines="1" />
 
-        <ImageButton
+        <TextView
             android:id="@+id/btn_next_account"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@android:drawable/ic_media_next"
-            android:background="@null"
-            android:tint="#CCFFFFFF"
-            android:contentDescription="Next account" />
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:text="&#8250;"
+            android:textColor="#CCFFFFFF"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:padding="0dp" />
 
         <View android:layout_width="1dp" android:layout_height="16dp"
             android:layout_marginLeft="6dp" android:layout_marginRight="6dp"
             android:background="#44FFFFFF" />
 
         <!-- Month nav -->
-        <ImageButton
+        <TextView
             android:id="@+id/btn_prev_month"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@android:drawable/ic_media_rew"
-            android:background="@null"
-            android:tint="#CCFFFFFF"
-            android:contentDescription="Previous month" />
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:text="&#171;"
+            android:textColor="#CCFFFFFF"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:padding="0dp" />
 
         <TextView
             android:id="@+id/widget_month_label"
@@ -75,14 +78,15 @@
             android:textSize="11sp"
             android:textStyle="bold" />
 
-        <ImageButton
+        <TextView
             android:id="@+id/btn_next_month"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@android:drawable/ic_media_ff"
-            android:background="@null"
-            android:tint="#CCFFFFFF"
-            android:contentDescription="Next month" />
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:text="&#187;"
+            android:textColor="#CCFFFFFF"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:padding="0dp" />
 
     </LinearLayout>
 
