@@ -117,39 +117,14 @@ class CalendarWidgetProvider : AppWidgetProvider() {
         val monthlyTotal = dailyData.values.sum()
         val currency     = homePrefs.getString(KEY_CURRENCY, "") ?: ""
 
-        val compact  = isCompactWidget(appWidgetManager, appWidgetId)
-        val layoutId = if (compact) R.layout.calendar_widget_compact else R.layout.calendar_widget
-        val views    = RemoteViews(context.packageName, layoutId)
-
+        // --- Step 1: always update with the minimal layout (no custom drawables, no GridView).
+        // This confirms onUpdate is running. Once this works, we can switch to the full layout.
+        val views = RemoteViews(context.packageName, R.layout.calendar_widget_minimal)
         views.setTextViewText(R.id.widget_account_name, accountLabel)
         views.setTextViewText(R.id.widget_month_label, monthKey)
-
         val totalColor = if (monthlyTotal >= 0) COLOR_GREEN else COLOR_RED
         views.setTextViewText(R.id.widget_monthly_total, formatAmount(monthlyTotal, currency))
         views.setTextColor(R.id.widget_monthly_total, totalColor)
-
-        views.setOnClickPendingIntent(R.id.btn_prev_month,   buildBroadcast(context, ACTION_PREV_MONTH,   appWidgetId))
-        views.setOnClickPendingIntent(R.id.btn_next_month,   buildBroadcast(context, ACTION_NEXT_MONTH,   appWidgetId))
-        views.setOnClickPendingIntent(R.id.btn_prev_account, buildBroadcast(context, ACTION_PREV_ACCOUNT, appWidgetId))
-        views.setOnClickPendingIntent(R.id.btn_next_account, buildBroadcast(context, ACTION_NEXT_ACCOUNT, appWidgetId))
-
-        if (compact) {
-            val today   = Calendar.getInstance()
-            val dayFmt  = java.text.SimpleDateFormat("d",   Locale.getDefault())
-            val wdayFmt = java.text.SimpleDateFormat("EEE", Locale.getDefault())
-            views.setTextViewText(R.id.widget_day,     dayFmt.format(today.time))
-            views.setTextViewText(R.id.widget_weekday, wdayFmt.format(today.time).uppercase(Locale.getDefault()))
-        } else {
-            val serviceIntent = Intent(context, CalendarWidgetService::class.java).apply {
-                // Unique data URI ensures distinct factory per widget instance
-                data = Uri.parse("widget://calendar/$appWidgetId")
-                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-                putExtra(CalendarWidgetService.EXTRA_YEAR,     displayYear)
-                putExtra(CalendarWidgetService.EXTRA_MONTH,    displayMonth)
-                putExtra(CalendarWidgetService.EXTRA_DAYS_RAW, daysRaw)
-            }
-            views.setRemoteAdapter(R.id.widget_calendar_grid, serviceIntent)
-        }
 
         val openApp = PendingIntent.getActivity(
             context, appWidgetId,
@@ -161,9 +136,6 @@ class CalendarWidgetProvider : AppWidgetProvider() {
         views.setOnClickPendingIntent(R.id.widget_root, openApp)
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
-        if (!compact) {
-            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.widget_calendar_grid)
-        }
     }
 
     private fun isCompactWidget(appWidgetManager: AppWidgetManager, appWidgetId: Int): Boolean {
