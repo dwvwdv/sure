@@ -141,7 +141,9 @@ class CalendarWidgetProvider : AppWidgetProvider() {
             views.setTextViewText(R.id.widget_weekday, wdayFmt.format(today.time).uppercase(Locale.getDefault()))
         } else {
             val serviceIntent = Intent(context, CalendarWidgetService::class.java).apply {
-                data = Uri.parse("widget://calendar/$appWidgetId")
+                // Include year+month in URI so a new factory is created on each month
+                // change. Same URI = cached factory = old month data / stale today highlight.
+                data = Uri.parse("widget://calendar/$appWidgetId/$displayYear/$displayMonth")
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
                 putExtra(CalendarWidgetService.EXTRA_YEAR,     displayYear)
                 putExtra(CalendarWidgetService.EXTRA_MONTH,    displayMonth)
