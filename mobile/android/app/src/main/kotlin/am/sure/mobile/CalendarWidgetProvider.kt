@@ -117,14 +117,27 @@ class CalendarWidgetProvider : AppWidgetProvider() {
         val monthlyTotal = dailyData.values.sum()
         val currency     = homePrefs.getString(KEY_CURRENCY, "") ?: ""
 
-        // --- Step 1: always update with the minimal layout (no custom drawables, no GridView).
-        // This confirms onUpdate is running. Once this works, we can switch to the full layout.
-        val views = RemoteViews(context.packageName, R.layout.calendar_widget_minimal)
+        // Use compact layout for all sizes for now (no GridView) to confirm
+        // custom drawables and nav buttons work. Full GridView layout comes next.
+        val views = RemoteViews(context.packageName, R.layout.calendar_widget_compact)
+
         views.setTextViewText(R.id.widget_account_name, accountLabel)
         views.setTextViewText(R.id.widget_month_label, monthKey)
+
         val totalColor = if (monthlyTotal >= 0) COLOR_GREEN else COLOR_RED
         views.setTextViewText(R.id.widget_monthly_total, formatAmount(monthlyTotal, currency))
         views.setTextColor(R.id.widget_monthly_total, totalColor)
+
+        views.setOnClickPendingIntent(R.id.btn_prev_month,   buildBroadcast(context, ACTION_PREV_MONTH,   appWidgetId))
+        views.setOnClickPendingIntent(R.id.btn_next_month,   buildBroadcast(context, ACTION_NEXT_MONTH,   appWidgetId))
+        views.setOnClickPendingIntent(R.id.btn_prev_account, buildBroadcast(context, ACTION_PREV_ACCOUNT, appWidgetId))
+        views.setOnClickPendingIntent(R.id.btn_next_account, buildBroadcast(context, ACTION_NEXT_ACCOUNT, appWidgetId))
+
+        val today   = Calendar.getInstance()
+        val dayFmt  = java.text.SimpleDateFormat("d",   Locale.getDefault())
+        val wdayFmt = java.text.SimpleDateFormat("EEE", Locale.getDefault())
+        views.setTextViewText(R.id.widget_day,     dayFmt.format(today.time))
+        views.setTextViewText(R.id.widget_weekday, wdayFmt.format(today.time).uppercase(Locale.getDefault()))
 
         val openApp = PendingIntent.getActivity(
             context, appWidgetId,
