@@ -6,6 +6,7 @@ import '../services/accounts_service.dart';
 import '../services/offline_storage_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/log_service.dart';
+import '../services/home_widget_service.dart';
 
 class AccountsProvider with ChangeNotifier {
   final AccountsService _accountsService = AccountsService();
@@ -129,6 +130,12 @@ class AccountsProvider with ChangeNotifier {
       _isLoading = false;
       _isInitializing = false;
       notifyListeners();
+
+      // Refresh home screen widget with latest account list
+      if (_accounts.isNotEmpty) {
+        HomeWidgetService.instance.updateAccounts(accounts: _accounts);
+      }
+
       return _accounts.isNotEmpty;
     } catch (e) {
       _log.error('AccountsProvider', 'Error in fetchAccounts: $e');

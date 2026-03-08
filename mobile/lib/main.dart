@@ -12,10 +12,12 @@ import 'screens/main_navigation_screen.dart';
 import 'services/api_config.dart';
 import 'services/connectivity_service.dart';
 import 'services/log_service.dart';
+import 'services/home_widget_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ApiConfig.initialize();
+  await HomeWidgetService.instance.initialize();
 
   // Add initial log entry
   LogService.instance.info('App', 'Sure app starting...');
