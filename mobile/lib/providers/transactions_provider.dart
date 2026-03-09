@@ -7,6 +7,7 @@ import '../services/offline_storage_service.dart';
 import '../services/sync_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/log_service.dart';
+import '../services/widget_service.dart';
 
 class TransactionsProvider with ChangeNotifier {
   final TransactionsService _transactionsService = TransactionsService();
@@ -130,6 +131,8 @@ class TransactionsProvider with ChangeNotifier {
           _error = result.error;
         }
       }
+      // Update home screen calendar widget with latest transaction data
+      _updateHomeWidget();
     } catch (e) {
       _log.error('TransactionsProvider', 'Error in fetchTransactions: $e');
       _error = 'Something went wrong. Please try again.';
@@ -137,6 +140,16 @@ class TransactionsProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void _updateHomeWidget() {
+    final txList = transactions;
+    if (txList.isEmpty) return;
+
+    WidgetService.updateCalendarWidget(
+      transactions: txList,
+      accountName: _currentAccountId,
+    );
   }
 
   /// Create a new transaction (offline-first)

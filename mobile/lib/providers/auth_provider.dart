@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../services/device_service.dart';
 import '../services/api_config.dart';
 import '../services/log_service.dart';
+import '../services/widget_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -286,6 +287,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> logout() async {
     await _authService.logout();
+    await WidgetService.clearWidgetData();
     _tokens = null;
     _user = null;
     _apiKey = null;
