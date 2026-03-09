@@ -100,11 +100,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
       _log.info('CalendarScreen', 'Calculated ${_dailyChanges.length} days with changes');
 
       // Update home screen widget with current data
-      WidgetService.updateCalendarWidget(
-        transactions: transactions,
-        accountName: _selectedAccount?.name,
-        currency: _selectedAccount?.currency,
-      );
+      if (_selectedAccount != null) {
+        WidgetService.updateCalendarWidget(
+          transactions: transactions,
+          accountId: _selectedAccount!.id,
+          accountName: _selectedAccount!.name,
+          currency: _selectedAccount!.currency,
+        );
+      }
     }
 
     setState(() {

@@ -36,7 +36,6 @@ class WidgetService {
       await HomeWidget.saveWidgetData(
           'widget_account_count', accounts.length);
 
-      // If no account is currently selected, default to first
       await HomeWidget.updateWidget(androidName: _androidWidgetName);
 
       _log.info(
@@ -46,16 +45,17 @@ class WidgetService {
     }
   }
 
-  /// Update the calendar widget with transaction data for an account.
-  /// Stores ALL transactions (not filtered by month) so the widget
-  /// can navigate months natively.
+  /// Update the calendar widget with transaction data for a specific account.
+  /// Stores daily totals keyed by account ID so switching accounts on the
+  /// widget can display each account's data independently.
   static Future<void> updateCalendarWidget({
     required List<Transaction> transactions,
+    required String accountId,
     String? accountName,
     String? currency,
   }) async {
     try {
-      // Calculate daily totals for ALL dates (widget will filter by month)
+      // Calculate daily totals for ALL dates (widget filters by month)
       final dailyTotals = <String, double>{};
 
       for (var transaction in transactions) {
@@ -87,18 +87,28 @@ class WidgetService {
         }
       }
 
+      // Read existing per-account data map, update this account's entry
+      final existingJson =
+          await HomeWidget.getWidgetData<String>('widget_all_daily_totals');
+      Map<String, dynamic> allAccountTotals = {};
+      if (existingJson != null) {
+        try {
+          allAccountTotals =
+              Map<String, dynamic>.from(jsonDecode(existingJson));
+        } catch (_) {}
+      }
+
+      allAccountTotals[accountId] = dailyTotals;
+
       await HomeWidget.saveWidgetData(
-          'widget_account_name', accountName ?? 'All Accounts');
-      await HomeWidget.saveWidgetData('widget_currency', currency ?? '');
-      await HomeWidget.saveWidgetData(
-          'widget_daily_totals', jsonEncode(dailyTotals));
+          'widget_all_daily_totals', jsonEncode(allAccountTotals));
       await HomeWidget.saveWidgetData(
           'widget_last_updated', DateTime.now().toIso8601String());
 
       await HomeWidget.updateWidget(androidName: _androidWidgetName);
 
       _log.info('WidgetService',
-          'Calendar widget updated: ${dailyTotals.length} days for $accountName');
+          'Calendar widget updated: ${dailyTotals.length} days for account $accountId ($accountName)');
     } catch (e) {
       _log.error('WidgetService', 'Failed to update calendar widget: $e');
     }
@@ -109,9 +119,7 @@ class WidgetService {
     try {
       await HomeWidget.saveWidgetData('widget_accounts', null);
       await HomeWidget.saveWidgetData('widget_account_count', null);
-      await HomeWidget.saveWidgetData('widget_account_name', null);
-      await HomeWidget.saveWidgetData('widget_currency', null);
-      await HomeWidget.saveWidgetData('widget_daily_totals', null);
+      await HomeWidget.saveWidgetData('widget_all_daily_totals', null);
       await HomeWidget.saveWidgetData('widget_last_updated', null);
       await HomeWidget.saveWidgetData('widget_selected_account_index', null);
       await HomeWidget.saveWidgetData('widget_view_year', null);

@@ -58,22 +58,23 @@ class CalendarWidgetProvider : AppWidgetProvider() {
             // Get current account info
             var accountName = "No accounts"
             var accountCurrency = ""
+            var accountId = ""
             if (accountCount > 0) {
                 val safeIndex = selectedAccountIndex.coerceIn(0, accountCount - 1)
                 val account = accounts.getJSONObject(safeIndex)
                 accountName = account.optString("name", "Unknown")
                 accountCurrency = account.optString("currency", "")
+                accountId = account.optString("id", "")
             }
 
-            // Read daily totals
-            val dailyTotalsJson = prefs.getString("widget_daily_totals", "{}") ?: "{}"
-            val dailyTotals = try { JSONObject(dailyTotalsJson) } catch (e: Exception) { JSONObject() }
-
-            // Override with stored account name and currency if available
-            val storedAccountName = prefs.getString("widget_account_name", null)
-            val storedCurrency = prefs.getString("widget_currency", null)
-            if (storedAccountName != null) accountName = storedAccountName
-            if (storedCurrency != null) accountCurrency = storedCurrency
+            // Read per-account daily totals
+            val allTotalsJson = prefs.getString("widget_all_daily_totals", "{}") ?: "{}"
+            val allTotals = try { JSONObject(allTotalsJson) } catch (e: Exception) { JSONObject() }
+            val dailyTotals = if (accountId.isNotEmpty() && allTotals.has(accountId)) {
+                try { allTotals.getJSONObject(accountId) } catch (e: Exception) { JSONObject() }
+            } else {
+                JSONObject()
+            }
 
             // --- Set up click actions ---
 
@@ -95,7 +96,6 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                 context, 0, launchIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            // Set on each week row so tapping any day opens app
             val weekRowIds = intArrayOf(
                 R.id.week_row_0, R.id.week_row_1, R.id.week_row_2,
                 R.id.week_row_3, R.id.week_row_4, R.id.week_row_5
@@ -117,8 +117,8 @@ class CalendarWidgetProvider : AppWidgetProvider() {
             }
 
             // Month/year
-            val monthName = if (viewMonth in 1..12) monthNames[viewMonth - 1] else ""
-            views.setTextViewText(R.id.widget_month_year, "$monthName $viewYear")
+            val monthLabel = if (viewMonth in 1..12) monthNames[viewMonth - 1] else ""
+            views.setTextViewText(R.id.widget_month_year, "$monthLabel $viewYear")
 
             // --- Calculate monthly total from daily totals ---
             val yearMonthPrefix = String.format("%04d-%02d", viewYear, viewMonth)
@@ -253,7 +253,7 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                 val year = prefs.getInt("widget_view_year", Calendar.getInstance().get(Calendar.YEAR))
                 val month = prefs.getInt("widget_view_month", Calendar.getInstance().get(Calendar.MONTH) + 1)
                 val cal = Calendar.getInstance()
-                cal.set(year, month - 2, 1) // month-2 because Calendar is 0-indexed
+                cal.set(year, month - 2, 1)
                 prefs.edit()
                     .putInt("widget_view_year", cal.get(Calendar.YEAR))
                     .putInt("widget_view_month", cal.get(Calendar.MONTH) + 1)
@@ -264,7 +264,7 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                 val year = prefs.getInt("widget_view_year", Calendar.getInstance().get(Calendar.YEAR))
                 val month = prefs.getInt("widget_view_month", Calendar.getInstance().get(Calendar.MONTH) + 1)
                 val cal = Calendar.getInstance()
-                cal.set(year, month, 1) // month (not month+1) because Calendar is 0-indexed and we want next
+                cal.set(year, month, 1)
                 prefs.edit()
                     .putInt("widget_view_year", cal.get(Calendar.YEAR))
                     .putInt("widget_view_month", cal.get(Calendar.MONTH) + 1)
@@ -277,7 +277,7 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                     val current = prefs.getInt("widget_selected_account_index", 0)
                     val newIndex = if (current <= 0) accountCount - 1 else current - 1
                     prefs.edit().putInt("widget_selected_account_index", newIndex).apply()
-                    syncAccountSelection(context, prefs, newIndex)
+                    updateAllWidgets(context)
                 }
             }
             ACTION_NEXT_ACCOUNT -> {
@@ -286,30 +286,9 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                     val current = prefs.getInt("widget_selected_account_index", 0)
                     val newIndex = if (current >= accountCount - 1) 0 else current + 1
                     prefs.edit().putInt("widget_selected_account_index", newIndex).apply()
-                    syncAccountSelection(context, prefs, newIndex)
+                    updateAllWidgets(context)
                 }
             }
         }
-    }
-
-    /**
-     * When account selection changes on the widget, update the displayed
-     * account name and currency from the stored accounts list, then refresh.
-     */
-    private fun syncAccountSelection(context: Context, prefs: android.content.SharedPreferences, index: Int) {
-        val accountsJson = prefs.getString("widget_accounts", "[]") ?: "[]"
-        try {
-            val accounts = JSONArray(accountsJson)
-            if (index < accounts.length()) {
-                val account = accounts.getJSONObject(index)
-                prefs.edit()
-                    .putString("widget_account_name", account.optString("name", "Unknown"))
-                    .putString("widget_currency", account.optString("currency", ""))
-                    .apply()
-            }
-        } catch (e: Exception) {
-            // ignore parse errors
-        }
-        updateAllWidgets(context)
     }
 }

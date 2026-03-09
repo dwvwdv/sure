@@ -144,11 +144,11 @@ class TransactionsProvider with ChangeNotifier {
 
   void _updateHomeWidget() {
     final txList = transactions;
-    if (txList.isEmpty) return;
+    if (txList.isEmpty || _currentAccountId == null) return;
 
     WidgetService.updateCalendarWidget(
       transactions: txList,
-      accountName: _currentAccountId,
+      accountId: _currentAccountId!,
     );
   }
 
