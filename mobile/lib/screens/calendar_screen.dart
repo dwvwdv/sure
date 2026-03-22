@@ -7,6 +7,7 @@ import '../providers/accounts_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/log_service.dart';
+import '../services/widget_service.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -97,6 +98,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
       _calculateDailyChanges(transactions);
       _log.info('CalendarScreen', 'Calculated ${_dailyChanges.length} days with changes');
+
+      // Update home screen widget with current data
+      if (_selectedAccount != null) {
+        WidgetService.updateCalendarWidget(
+          transactions: transactions,
+          accountId: _selectedAccount!.id,
+          accountName: _selectedAccount!.name,
+          currency: _selectedAccount!.currency,
+        );
+      }
     }
 
     setState(() {

@@ -34,5 +34,22 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- Calendar Home Screen Widget -->
+        <receiver
+            android:name=".CalendarWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="am.sure.mobile.ACTION_PREV_MONTH" />
+                <action android:name="am.sure.mobile.ACTION_NEXT_MONTH" />
+                <action android:name="am.sure.mobile.ACTION_PREV_ACCOUNT" />
+                <action android:name="am.sure.mobile.ACTION_NEXT_ACCOUNT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/calendar_widget_info" />
+        </receiver>
     </application>
 </manifest>

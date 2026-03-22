@@ -13,10 +13,12 @@ import 'screens/sso_onboarding_screen.dart';
 import 'services/api_config.dart';
 import 'services/connectivity_service.dart';
 import 'services/log_service.dart';
+import 'services/widget_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ApiConfig.initialize();
+  await WidgetService.initialize();
 
   // Add initial log entry
   LogService.instance.info('App', 'Sure app starting...');

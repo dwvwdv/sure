@@ -6,6 +6,7 @@ import '../services/accounts_service.dart';
 import '../services/offline_storage_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/log_service.dart';
+import '../services/widget_service.dart';
 
 class AccountsProvider with ChangeNotifier {
   final AccountsService _accountsService = AccountsService();
@@ -124,6 +125,11 @@ class AccountsProvider with ChangeNotifier {
         }
       } else if (!isOnline && _accounts.isEmpty) {
         _errorMessage = 'You are offline. Please connect to the internet to load accounts.';
+      }
+
+      // Update home screen widget with account list
+      if (_accounts.isNotEmpty) {
+        WidgetService.updateAccountList(_accounts);
       }
 
       _isLoading = false;
