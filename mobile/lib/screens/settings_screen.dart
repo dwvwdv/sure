@@ -34,7 +34,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       final build = packageInfo.buildNumber;
       final display = build.isNotEmpty
-          ? '${packageInfo.version} (${build})'
+          ? '${packageInfo.version} ($build)'
           : packageInfo.version;
       setState(() => _appVersion = display);
     }

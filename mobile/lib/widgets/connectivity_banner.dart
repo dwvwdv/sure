@@ -34,7 +34,7 @@ class _ConnectivityBannerState extends State<ConnectivityBanner> {
     try {
       await transactionsProvider.syncTransactions(accessToken: accessToken);
 
-      if (!mounted) return;
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Transactions synced successfully'),
@@ -42,7 +42,7 @@ class _ConnectivityBannerState extends State<ConnectivityBanner> {
         ),
       );
     } catch (e) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Failed to sync transactions. Please try again.'),

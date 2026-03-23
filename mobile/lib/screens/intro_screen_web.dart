@@ -1,4 +1,4 @@
-import 'dart:html' as html;
+import 'package:web/web.dart' as web;
 import 'dart:ui_web' as ui;
 import 'package:flutter/material.dart';
 
@@ -24,7 +24,7 @@ class _IntroScreenPlatformState extends State<IntroScreenPlatform> {
     _viewType = 'intro-screen-web-$currentId';
 
     ui.platformViewRegistry.registerViewFactory(_viewType, (int viewId) {
-      final frame = html.IFrameElement()
+      final frame = web.HTMLIFrameElement()
         ..srcdoc = _introHtmlContent
         ..style.width = '100%'
         ..style.height = '100%'
@@ -76,7 +76,7 @@ const String _introHtmlContent = '''
         padding-right: 0.75rem;
       }
 
-      .lg\:px-10 {
+      .lg\\:px-10 {
         padding-left: 2.5rem;
         padding-right: 2.5rem;
       }
