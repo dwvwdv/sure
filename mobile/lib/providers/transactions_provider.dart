@@ -7,6 +7,7 @@ import '../services/offline_storage_service.dart';
 import '../services/sync_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/log_service.dart';
+import '../services/home_widget_service.dart';
 
 class TransactionsProvider with ChangeNotifier {
   final TransactionsService _transactionsService = TransactionsService();
@@ -129,6 +130,14 @@ class TransactionsProvider with ChangeNotifier {
           _log.error('TransactionsProvider', 'Sync failed: ${result.error}');
           _error = result.error;
         }
+      }
+      // Update home screen widget with daily transaction data for this account
+      if (_currentAccountId != null && _transactions.isNotEmpty) {
+        HomeWidgetService.instance.updateTransactions(
+          accountId: _currentAccountId!,
+          transactions: _transactions.map((t) => t.toTransaction()).toList(),
+          isAsset: true, // CalendarScreen flips sign for both asset and liability
+        );
       }
     } catch (e) {
       _log.error('TransactionsProvider', 'Error in fetchTransactions: $e');

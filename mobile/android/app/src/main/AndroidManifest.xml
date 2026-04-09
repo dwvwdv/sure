@@ -34,5 +34,28 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- Home screen calendar widget -->
+        <receiver
+            android:name=".CalendarWidgetProvider"
+            android:exported="true"
+            android:label="Sure Calendar Widget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="am.sure.mobile.widget.PREV_MONTH" />
+                <action android:name="am.sure.mobile.widget.NEXT_MONTH" />
+                <action android:name="am.sure.mobile.widget.PREV_ACCOUNT" />
+                <action android:name="am.sure.mobile.widget.NEXT_ACCOUNT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/calendar_widget_info" />
+        </receiver>
+
+        <!-- RemoteViewsService for calendar GridView data -->
+        <service
+            android:name=".CalendarWidgetService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
     </application>
 </manifest>
